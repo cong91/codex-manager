@@ -10,7 +10,9 @@
 - **多邮箱服务支持**
   - Tempmail.lol（临时邮箱，无需配置）
   - Outlook（IMAP + XOAUTH2，支持批量导入）
-  - 自定义域名（REST API）
+  - 自定义域名（两种子类型）
+    - **MoeMail**：标准 REST API，配置 API 地址 + API 密钥
+    - **TempMail**：自部署 Cloudflare Worker 临时邮箱，配置 Worker 地址 + Admin 密码
 
 - **注册模式**
   - 单次注册
@@ -278,7 +280,8 @@ docker-compose build --no-cache
 - CPA 上传始终直连，不经过代理
 - Team Manager 上传始终直连，不经过代理
 - 支付链接生成使用账号 access_token 鉴权，走全局代理配置
-- 无痕浏览器依次尝试 Chrome、Edge，未找到时返回失败提示
+- 无痕浏览器优先使用 playwright（注入 cookie 直达支付页）；未安装时降级为系统 Chrome/Edge 无痕模式
+- 安装完整支付功能：`pip install playwright && playwright install chromium`（可选）
 - 订阅状态自动检测调用 `chatgpt.com/backend-api/me`，走全局代理
 - 批量注册并发数上限为 50，线程池大小已相应调整
 
