@@ -147,7 +147,7 @@ async def update_dynamic_proxy_settings(request: DynamicProxySettings):
         update_dict["proxy_dynamic_api_key"] = request.api_key
 
     update_settings(**update_dict)
-    return {"success": True, "message": "动态代理设置已更新"}
+    return {"success": True, "message": "Cài đặt proxy động đã được cập nhật"}
 
 
 @router.post("/proxy/dynamic/test")
@@ -156,7 +156,7 @@ async def test_dynamic_proxy(request: DynamicProxySettings):
     from ...core.dynamic_proxy import fetch_dynamic_proxy
 
     if not request.api_url:
-        raise HTTPException(status_code=400, detail="请填写动态代理 API 地址")
+        raise HTTPException(status_code=400, detail="Vui lòng nhập địa chỉ API proxy động")
 
     # 若未传入 api_key，使用已保存的
     api_key = request.api_key or ""
@@ -173,7 +173,7 @@ async def test_dynamic_proxy(request: DynamicProxySettings):
     )
 
     if not proxy_url:
-        return {"success": False, "message": "动态代理 API 返回为空或请求失败"}
+        return {"success": False, "message": "API proxy động trả về rỗng hoặc yêu cầu thất bại"}
 
     # 用获取到的代理测试连通性
     import time
@@ -191,10 +191,10 @@ async def test_dynamic_proxy(request: DynamicProxySettings):
         if resp.status_code == 200:
             ip = resp.json().get("ip", "")
             return {"success": True, "proxy_url": proxy_url, "ip": ip, "response_time": elapsed,
-                    "message": f"动态代理可用，出口 IP: {ip}，响应时间: {elapsed}ms"}
-        return {"success": False, "proxy_url": proxy_url, "message": f"代理连接失败: HTTP {resp.status_code}"}
+                    "message": f"Proxy động khả dụng, IP đầu ra: {ip}, thời gian phản hồi: {elapsed}ms"}
+        return {"success": False, "proxy_url": proxy_url, "message": f"Kết nối proxy thất bại: HTTP {resp.status_code}"}
     except Exception as e:
-        return {"success": False, "proxy_url": proxy_url, "message": f"代理连接失败: {e}"}
+        return {"success": False, "proxy_url": proxy_url, "message": f"Kết nối proxy thất bại: {e}"}
 
 
 @router.get("/registration")
@@ -222,7 +222,7 @@ async def update_registration_settings(request: RegistrationSettings):
         registration_sleep_max=request.sleep_max,
     )
 
-    return {"success": True, "message": "注册设置已更新"}
+    return {"success": True, "message": "Cài đặt đăng ký đã được cập nhật"}
 
 
 @router.post("/webui")
@@ -239,7 +239,7 @@ async def update_webui_settings(request: WebUISettings):
         update_dict["webui_access_password"] = request.access_password
 
     update_settings(**update_dict)
-    return {"success": True, "message": "Web UI 设置已更新"}
+    return {"success": True, "message": "Cài đặt Web UI đã được cập nhật"}
 
 
 @router.get("/database")
@@ -287,7 +287,7 @@ async def backup_database():
         db_path = db_path[10:]
 
     if not os.path.exists(db_path):
-        raise HTTPException(status_code=404, detail="数据库文件不存在")
+        raise HTTPException(status_code=404, detail="Tệp cơ sở dữ liệu không tồn tại")
 
     # 创建备份目录
     from pathlib import Path as FilePath
@@ -303,7 +303,7 @@ async def backup_database():
 
     return {
         "success": True,
-        "message": "数据库备份成功",
+        "message": "Sao lưu cơ sở dữ liệu thành công",
         "backup_path": str(backup_path)
     }
 
@@ -338,7 +338,7 @@ async def cleanup_database(
 
     return {
         "success": True,
-        "message": f"已清理 {deleted_count} 条过期任务记录",
+        "message": f"Đã dọn {deleted_count} bản ghi tác vụ hết hạn",
         "deleted_count": deleted_count
     }
 
@@ -353,13 +353,13 @@ async def get_recent_logs(
 
     log_file = settings.log_file
     if not log_file:
-        return {"logs": [], "message": "日志文件未配置"}
+        return {"logs": [], "message": "Chưa cấu hình tệp nhật ký"}
 
     from pathlib import Path
     log_path = Path(log_file)
 
     if not log_path.exists():
-        return {"logs": [], "message": "日志文件不存在"}
+        return {"logs": [], "message": "Tệp nhật ký không tồn tại"}
 
     try:
         with open(log_path, "r", encoding="utf-8") as f:
@@ -411,7 +411,7 @@ async def update_tempmail_settings(request: TempmailSettings):
 
     update_settings(**update_dict)
 
-    return {"success": True, "message": "临时邮箱设置已更新"}
+    return {"success": True, "message": "Cài đặt email tạm thời đã được cập nhật"}
 
 
 # ============== 验证码等待设置 ==============
@@ -431,16 +431,16 @@ async def update_email_code_settings(request: EmailCodeSettings):
     """更新验证码等待设置"""
     # 验证参数范围
     if request.timeout < 30 or request.timeout > 600:
-        raise HTTPException(status_code=400, detail="超时时间必须在 30-600 秒之间")
+        raise HTTPException(status_code=400, detail="Thời gian chờ phải nằm trong khoảng 30-600 giây")
     if request.poll_interval < 1 or request.poll_interval > 30:
-        raise HTTPException(status_code=400, detail="轮询间隔必须在 1-30 秒之间")
+        raise HTTPException(status_code=400, detail="Khoảng polling phải nằm trong khoảng 1-30 giây")
 
     update_settings(
         email_code_timeout=request.timeout,
         email_code_poll_interval=request.poll_interval,
     )
 
-    return {"success": True, "message": "验证码等待设置已更新"}
+    return {"success": True, "message": "Cài đặt thời gian chờ mã xác minh đã được cập nhật"}
 
 
 # ============== 代理列表 CRUD ==============
@@ -504,7 +504,7 @@ async def get_proxy_item(proxy_id: int):
     with get_db() as db:
         proxy = crud.get_proxy_by_id(db, proxy_id)
         if not proxy:
-            raise HTTPException(status_code=404, detail="代理不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
         return proxy.to_dict(include_password=True)
 
 
@@ -532,7 +532,7 @@ async def update_proxy_item(proxy_id: int, request: ProxyUpdateRequest):
 
         proxy = crud.update_proxy(db, proxy_id, **update_data)
         if not proxy:
-            raise HTTPException(status_code=404, detail="代理不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
         return {"success": True, "proxy": proxy.to_dict()}
 
 
@@ -542,8 +542,8 @@ async def delete_proxy_item(proxy_id: int):
     with get_db() as db:
         success = crud.delete_proxy(db, proxy_id)
         if not success:
-            raise HTTPException(status_code=404, detail="代理不存在")
-        return {"success": True, "message": "代理已删除"}
+            raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
+        return {"success": True, "message": "Proxy đã được xóa"}
 
 
 @router.post("/proxies/{proxy_id}/set-default")
@@ -552,7 +552,7 @@ async def set_proxy_default(proxy_id: int):
     with get_db() as db:
         proxy = crud.set_proxy_default(db, proxy_id)
         if not proxy:
-            raise HTTPException(status_code=404, detail="代理不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
         return {"success": True, "proxy": proxy.to_dict()}
 
 
@@ -565,7 +565,7 @@ async def test_proxy_item(proxy_id: int):
     with get_db() as db:
         proxy = crud.get_proxy_by_id(db, proxy_id)
         if not proxy:
-            raise HTTPException(status_code=404, detail="代理不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
 
         proxy_url = proxy.proxy_url
         test_url = "https://api.ipify.org?format=json"
@@ -592,18 +592,18 @@ async def test_proxy_item(proxy_id: int):
                     "success": True,
                     "ip": ip_info.get("ip", ""),
                     "response_time": round(elapsed_time * 1000),
-                    "message": f"代理连接成功，出口 IP: {ip_info.get('ip', 'unknown')}"
+                    "message": f"Kết nối proxy thành công, IP đầu ra: {ip_info.get('ip', 'unknown')}"
                 }
             else:
                 return {
                     "success": False,
-                    "message": f"代理返回错误状态码: {response.status_code}"
+                    "message": f"Proxy trả về mã trạng thái lỗi: {response.status_code}"
                 }
 
         except Exception as e:
             return {
                 "success": False,
-                "message": f"代理连接失败: {str(e)}"
+                "message": f"Kết nối proxy thất bại: {str(e)}"
             }
 
 
@@ -677,8 +677,8 @@ async def enable_proxy(proxy_id: int):
     with get_db() as db:
         proxy = crud.update_proxy(db, proxy_id, enabled=True)
         if not proxy:
-            raise HTTPException(status_code=404, detail="代理不存在")
-        return {"success": True, "message": "代理已启用"}
+            raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
+        return {"success": True, "message": "Proxy đã được bật"}
 
 
 @router.post("/proxies/{proxy_id}/disable")
@@ -687,8 +687,8 @@ async def disable_proxy(proxy_id: int):
     with get_db() as db:
         proxy = crud.update_proxy(db, proxy_id, enabled=False)
         if not proxy:
-            raise HTTPException(status_code=404, detail="代理不存在")
-        return {"success": True, "message": "代理已禁用"}
+            raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
+        return {"success": True, "message": "Proxy đã được tắt"}
 
 
 # ============== Outlook 设置 ==============
@@ -722,7 +722,7 @@ async def update_outlook_settings(request: OutlookSettings):
     if update_dict:
         update_settings(**update_dict)
 
-    return {"success": True, "message": "Outlook 设置已更新"}
+    return {"success": True, "message": "Cài đặt Outlook đã được cập nhật"}
 
 
 # ============== Team Manager 设置 ==============
@@ -761,7 +761,7 @@ async def update_team_manager_settings(request: TeamManagerSettings):
     if request.api_key:
         update_dict["tm_api_key"] = request.api_key
     update_settings(**update_dict)
-    return {"success": True, "message": "Team Manager 设置已更新"}
+    return {"success": True, "message": "Cài đặt Team Manager đã được cập nhật"}
 
 
 @router.post("/team-manager/test")
@@ -775,7 +775,7 @@ async def test_team_manager_connection(request: TeamManagerTestRequest):
         if settings.tm_api_key:
             api_key = settings.tm_api_key.get_secret_value()
         else:
-            return {"success": False, "message": "未配置 API Key"}
+            return {"success": False, "message": "Chưa cấu hình API key"}
 
     success, message = do_test(request.api_url, api_key)
     return {"success": success, "message": message}

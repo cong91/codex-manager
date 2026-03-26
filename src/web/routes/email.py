@@ -280,7 +280,7 @@ async def get_email_service(service_id: int):
     with get_db() as db:
         service = db.query(EmailServiceModel).filter(EmailServiceModel.id == service_id).first()
         if not service:
-            raise HTTPException(status_code=404, detail="服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
         return service_to_response(service)
 
 
@@ -290,7 +290,7 @@ async def get_email_service_full(service_id: int):
     with get_db() as db:
         service = db.query(EmailServiceModel).filter(EmailServiceModel.id == service_id).first()
         if not service:
-            raise HTTPException(status_code=404, detail="服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
         return {
             "id": service.id,
@@ -312,13 +312,13 @@ async def create_email_service(request: EmailServiceCreate):
     try:
         EmailServiceType(request.service_type)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"无效的服务类型: {request.service_type}")
+        raise HTTPException(status_code=400, detail=f"Loại dịch vụ không hợp lệ: {request.service_type}")
 
     with get_db() as db:
         # 检查名称是否重复
         existing = db.query(EmailServiceModel).filter(EmailServiceModel.name == request.name).first()
         if existing:
-            raise HTTPException(status_code=400, detail="服务名称已存在")
+            raise HTTPException(status_code=400, detail="Tên dịch vụ đã tồn tại")
 
         service = EmailServiceModel(
             service_type=request.service_type,
@@ -340,7 +340,7 @@ async def update_email_service(service_id: int, request: EmailServiceUpdate):
     with get_db() as db:
         service = db.query(EmailServiceModel).filter(EmailServiceModel.id == service_id).first()
         if not service:
-            raise HTTPException(status_code=404, detail="服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
         update_data = {}
         if request.name is not None:
@@ -372,12 +372,12 @@ async def delete_email_service(service_id: int):
     with get_db() as db:
         service = db.query(EmailServiceModel).filter(EmailServiceModel.id == service_id).first()
         if not service:
-            raise HTTPException(status_code=404, detail="服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
         db.delete(service)
         db.commit()
 
-        return {"success": True, "message": f"服务 {service.name} 已删除"}
+        return {"success": True, "message": f"Dịch vụ {service.name} đã được xóa"}
 
 
 @router.post("/{service_id}/test", response_model=ServiceTestResult)
@@ -386,7 +386,7 @@ async def test_email_service(service_id: int):
     with get_db() as db:
         service = db.query(EmailServiceModel).filter(EmailServiceModel.id == service_id).first()
         if not service:
-            raise HTTPException(status_code=404, detail="服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
         try:
             service_type = EmailServiceType(service.service_type)
@@ -397,20 +397,20 @@ async def test_email_service(service_id: int):
             if health:
                 return ServiceTestResult(
                     success=True,
-                    message="服务连接正常",
+                    message="Kết nối dịch vụ bình thường",
                     details=email_service.get_service_info() if hasattr(email_service, 'get_service_info') else None
                 )
             else:
                 return ServiceTestResult(
                     success=False,
-                    message="服务连接失败"
+                    message="Kết nối dịch vụ thất bại"
                 )
 
         except Exception as e:
             logger.error(f"测试邮箱服务失败: {e}")
             return ServiceTestResult(
                 success=False,
-                message=f"测试失败: {str(e)}"
+                message=f"Kiểm tra thất bại: {str(e)}"
             )
 
 
@@ -420,12 +420,12 @@ async def enable_email_service(service_id: int):
     with get_db() as db:
         service = db.query(EmailServiceModel).filter(EmailServiceModel.id == service_id).first()
         if not service:
-            raise HTTPException(status_code=404, detail="服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
         service.enabled = True
         db.commit()
 
-        return {"success": True, "message": f"服务 {service.name} 已启用"}
+        return {"success": True, "message": f"Dịch vụ {service.name} đã được bật"}
 
 
 @router.post("/{service_id}/disable")
@@ -434,12 +434,12 @@ async def disable_email_service(service_id: int):
     with get_db() as db:
         service = db.query(EmailServiceModel).filter(EmailServiceModel.id == service_id).first()
         if not service:
-            raise HTTPException(status_code=404, detail="服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
         service.enabled = False
         db.commit()
 
-        return {"success": True, "message": f"服务 {service.name} 已禁用"}
+        return {"success": True, "message": f"Dịch vụ {service.name} đã được tắt"}
 
 
 @router.post("/reorder")
@@ -453,7 +453,7 @@ async def reorder_services(service_ids: List[int]):
 
         db.commit()
 
-        return {"success": True, "message": "优先级已更新"}
+        return {"success": True, "message": "Độ ưu tiên đã được cập nhật"}
 
 
 @router.post("/outlook/batch-import", response_model=OutlookBatchImportResponse)
@@ -487,7 +487,7 @@ async def batch_import_outlook(request: OutlookBatchImportRequest):
             # 验证格式
             if len(parts) < 2:
                 failed += 1
-                errors.append(f"行 {i+1}: 格式错误，至少需要邮箱和密码")
+                errors.append(f"Dòng {i+1}: sai định dạng, cần tối thiểu email và mật khẩu")
                 continue
 
             email = parts[0].strip()
@@ -496,7 +496,7 @@ async def batch_import_outlook(request: OutlookBatchImportRequest):
             # 验证邮箱格式
             if "@" not in email:
                 failed += 1
-                errors.append(f"行 {i+1}: 无效的邮箱地址: {email}")
+                errors.append(f"Dòng {i+1}: địa chỉ email không hợp lệ: {email}")
                 continue
 
             # 检查是否已存在
@@ -507,7 +507,7 @@ async def batch_import_outlook(request: OutlookBatchImportRequest):
 
             if existing:
                 failed += 1
-                errors.append(f"行 {i+1}: 邮箱已存在: {email}")
+                errors.append(f"Dòng {i+1}: email đã tồn tại: {email}")
                 continue
 
             # 构建配置
@@ -547,7 +547,7 @@ async def batch_import_outlook(request: OutlookBatchImportRequest):
 
             except Exception as e:
                 failed += 1
-                errors.append(f"行 {i+1}: 创建失败: {str(e)}")
+                errors.append(f"Dòng {i+1}: tạo thất bại: {str(e)}")
                 db.rollback()
 
     return OutlookBatchImportResponse(
@@ -574,7 +574,7 @@ async def batch_delete_outlook(service_ids: List[int]):
                 deleted += 1
         db.commit()
 
-    return {"success": True, "deleted": deleted, "message": f"已删除 {deleted} 个服务"}
+    return {"success": True, "deleted": deleted, "message": f"Đã xóa {deleted} dịch vụ"}
 
 
 # ============== 临时邮箱测试 ==============
@@ -601,10 +601,10 @@ async def test_tempmail_service(request: TempmailTestRequest):
         health = tempmail.check_health()
 
         if health:
-            return {"success": True, "message": "临时邮箱连接正常"}
+            return {"success": True, "message": "Kết nối email tạm thời bình thường"}
         else:
-            return {"success": False, "message": "临时邮箱连接失败"}
+            return {"success": False, "message": "Kết nối email tạm thời thất bại"}
 
     except Exception as e:
         logger.error(f"测试临时邮箱失败: {e}")
-        return {"success": False, "message": f"测试失败: {str(e)}"}
+        return {"success": False, "message": f"Kiểm tra thất bại: {str(e)}"}

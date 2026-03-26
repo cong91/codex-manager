@@ -99,7 +99,7 @@ async def get_cpa_service(service_id: int):
     with get_db() as db:
         service = crud.get_cpa_service_by_id(db, service_id)
         if not service:
-            raise HTTPException(status_code=404, detail="CPA 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ CPA không tồn tại")
         return _to_response(service)
 
 
@@ -109,7 +109,7 @@ async def get_cpa_service_full(service_id: int):
     with get_db() as db:
         service = crud.get_cpa_service_by_id(db, service_id)
         if not service:
-            raise HTTPException(status_code=404, detail="CPA 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ CPA không tồn tại")
         return {
             "id": service.id,
             "name": service.name,
@@ -127,7 +127,7 @@ async def update_cpa_service(service_id: int, request: CpaServiceUpdate):
     with get_db() as db:
         service = crud.get_cpa_service_by_id(db, service_id)
         if not service:
-            raise HTTPException(status_code=404, detail="CPA 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ CPA không tồn tại")
 
         update_data = {}
         if request.name is not None:
@@ -154,9 +154,9 @@ async def delete_cpa_service(service_id: int):
     with get_db() as db:
         service = crud.get_cpa_service_by_id(db, service_id)
         if not service:
-            raise HTTPException(status_code=404, detail="CPA 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ CPA không tồn tại")
         crud.delete_cpa_service(db, service_id)
-        return {"success": True, "message": f"CPA 服务 {service.name} 已删除"}
+        return {"success": True, "message": f"Dịch vụ CPA {service.name} đã được xóa"}
 
 
 @router.post("/{service_id}/test")
@@ -165,7 +165,7 @@ async def test_cpa_service(service_id: int):
     with get_db() as db:
         service = crud.get_cpa_service_by_id(db, service_id)
         if not service:
-            raise HTTPException(status_code=404, detail="CPA 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ CPA không tồn tại")
         success, message = test_cpa_connection(service.api_url, service.api_token)
         return {"success": success, "message": message}
 
@@ -174,6 +174,6 @@ async def test_cpa_service(service_id: int):
 async def test_cpa_connection_direct(request: CpaServiceTestRequest):
     """直接测试 CPA 连接（用于添加前验证）"""
     if not request.api_url or not request.api_token:
-        raise HTTPException(status_code=400, detail="api_url 和 api_token 不能为空")
+        raise HTTPException(status_code=400, detail="api_url và api_token không được để trống")
     success, message = test_cpa_connection(request.api_url, request.api_token)
     return {"success": success, "message": message}

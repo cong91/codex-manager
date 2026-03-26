@@ -116,7 +116,7 @@ class ThemeManager {
         const buttons = document.querySelectorAll('.theme-toggle');
         buttons.forEach(btn => {
             btn.innerHTML = this.theme === 'light' ? '🌙' : '☀️';
-            btn.title = this.theme === 'light' ? '切换到暗色模式' : '切换到亮色模式';
+            btn.title = this.theme === 'light' ? 'Chuyển sang chế độ tối' : 'Chuyển sang chế độ sáng';
         });
     }
 }
@@ -133,7 +133,7 @@ class LoadingManager {
         this.activeLoaders = new Set();
     }
 
-    show(element, text = '加载中...') {
+    show(element, text = 'Đang tải...') {
         if (typeof element === 'string') {
             element = document.getElementById(element);
         }
@@ -215,12 +215,12 @@ class ApiClient {
             return data;
         } catch (error) {
             if (error.name === 'AbortError') {
-                const timeoutError = new Error('请求超时，请稍后重试');
+                const timeoutError = new Error('Yêu cầu đã hết thời gian chờ, vui lòng thử lại sau');
                 throw timeoutError;
             }
             // 网络错误处理
             if (!error.response) {
-                toast.error('网络连接失败，请检查网络');
+                toast.error('Kết nối mạng thất bại, vui lòng kiểm tra lại');
             }
             throw error;
         } finally {
@@ -326,10 +326,10 @@ const format = {
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
 
-        if (seconds < 60) return '刚刚';
-        if (minutes < 60) return `${minutes} 分钟前`;
-        if (hours < 24) return `${hours} 小时前`;
-        if (days < 7) return `${days} 天前`;
+        if (seconds < 60) return 'Vừa xong';
+        if (minutes < 60) return `${minutes} phút trước`;
+        if (hours < 24) return `${hours} giờ trước`;
+        if (days < 7) return `${days} ngày trước`;
         return this.dateShort(dateStr);
     },
 
@@ -353,26 +353,26 @@ const format = {
 
 const statusMap = {
     account: {
-        active: { text: '活跃', class: 'active' },
-        expired: { text: '过期', class: 'expired' },
-        banned: { text: '封禁', class: 'banned' },
-        failed: { text: '失败', class: 'failed' }
+        active: { text: 'Hoạt động', class: 'active' },
+        expired: { text: 'Hết hạn', class: 'expired' },
+        banned: { text: 'Bị khóa', class: 'banned' },
+        failed: { text: 'Lỗi', class: 'failed' }
     },
     task: {
-        pending: { text: '等待中', class: 'pending' },
-        running: { text: '运行中', class: 'running' },
-        completed: { text: '已完成', class: 'completed' },
-        failed: { text: '失败', class: 'failed' },
-        cancelled: { text: '已取消', class: 'disabled' }
+        pending: { text: 'Đang chờ', class: 'pending' },
+        running: { text: 'Đang chạy', class: 'running' },
+        completed: { text: 'Đã hoàn tất', class: 'completed' },
+        failed: { text: 'Lỗi', class: 'failed' },
+        cancelled: { text: 'Đã hủy', class: 'disabled' }
     },
     service: {
         tempmail: 'Tempmail.lol',
         outlook: 'Outlook',
         moe_mail: 'MoeMail',
-        temp_mail: 'Temp-Mail（自部署）',
+        temp_mail: 'Temp-Mail (tự host)',
         duck_mail: 'DuckMail',
         freemail: 'Freemail',
-        imap_mail: 'IMAP 邮箱'
+        imap_mail: 'Email IMAP'
     }
 };
 
@@ -389,10 +389,10 @@ function getServiceTypeText(type) {
 }
 
 const accountStatusIconMap = {
-    active:  { icon: '🟢', title: '活跃' },
-    expired: { icon: '🟡', title: '过期' },
-    banned:  { icon: '🔴', title: '封禁' },
-    failed:  { icon: '❌', title: '失败' },
+    active:  { icon: '🟢', title: 'Hoạt động' },
+    expired: { icon: '🟡', title: 'Hết hạn' },
+    banned:  { icon: '🔴', title: 'Bị khóa' },
+    failed:  { icon: '❌', title: 'Lỗi' },
 };
 
 function getStatusIcon(status) {
@@ -402,10 +402,10 @@ function getStatusIcon(status) {
 }
 
 // ============================================
-// 确认对话框
+// Xác nhận对话框
 // ============================================
 
-function confirm(message, title = '确认操作') {
+function confirm(message, title = 'Xác nhận thao tác') {
     return new Promise((resolve) => {
         const modal = document.createElement('div');
         modal.className = 'modal active';
@@ -417,8 +417,8 @@ function confirm(message, title = '确认操作') {
                 <div class="modal-body">
                     <p style="margin-bottom: var(--spacing-lg);">${message}</p>
                     <div class="form-actions" style="margin-top: 0; padding-top: 0; border-top: none;">
-                        <button class="btn btn-secondary" id="confirm-cancel">取消</button>
-                        <button class="btn btn-danger" id="confirm-ok">确认</button>
+                        <button class="btn btn-secondary" id="confirm-cancel">Hủy</button>
+                        <button class="btn btn-danger" id="confirm-ok">Xác nhận</button>
                     </div>
                 </div>
             </div>
@@ -456,7 +456,7 @@ async function copyToClipboard(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
             await navigator.clipboard.writeText(text);
-            toast.success('已复制到剪贴板');
+            toast.success('Đã sao chép vào khay nhớ tạm');
             return true;
         } catch (err) {
             // 降级到 execCommand
@@ -472,12 +472,12 @@ async function copyToClipboard(text) {
         const ok = document.execCommand('copy');
         document.body.removeChild(ta);
         if (ok) {
-            toast.success('已复制到剪贴板');
+            toast.success('Đã sao chép vào khay nhớ tạm');
             return true;
         }
         throw new Error('execCommand failed');
     } catch (err) {
-        toast.error('复制失败');
+        toast.error('Sao chép thất bại');
         return false;
     }
 }

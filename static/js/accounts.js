@@ -3,7 +3,7 @@
  * 使用 utils.js 中的工具库
  */
 
-// 状态
+// Trạng thái
 let currentPage = 1;
 let pageSize = 20;
 let totalAccounts = 0;
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     loadAccounts();
     initEventListeners();
-    updateBatchButtons();  // 初始化按钮状态
+    updateBatchButtons();  // 初始化按钮Trạng thái
     renderSelectAllBanner();
 });
 
@@ -82,14 +82,14 @@ function initEventListeners() {
         }
     });
 
-    // 刷新
+    // Làm mới
     elements.refreshBtn.addEventListener('click', () => {
         loadStats();
         loadAccounts();
-        toast.info('已刷新');
+        toast.info('Đã làm mới');
     });
 
-    // 批量刷新Token
+    // 批量Làm mớiToken
     elements.batchRefreshBtn.addEventListener('click', handleBatchRefresh);
 
     // 批量验证Token
@@ -98,7 +98,7 @@ function initEventListeners() {
     // 批量检测订阅
     elements.batchCheckSubBtn.addEventListener('click', handleBatchCheckSubscription);
 
-    // 上传下拉菜单
+    // Tải lên下拉菜单
     const uploadMenu = document.getElementById('upload-menu');
     elements.batchUploadBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -109,7 +109,7 @@ function initEventListeners() {
     document.getElementById('batch-upload-tm-item').addEventListener('click', (e) => { e.preventDefault(); uploadMenu.classList.remove('active'); handleBatchUploadTm(); });
     document.getElementById('batch-upload-newapi-item').addEventListener('click', (e) => { e.preventDefault(); uploadMenu.classList.remove('active'); handleBatchUploadNewapi(); });
 
-    // 批量删除
+    // 批量Xóa
     elements.batchDeleteBtn.addEventListener('click', handleBatchDelete);
 
     // Codex Auth 登录
@@ -210,7 +210,7 @@ async function loadStats() {
         // 添加动画效果
         animateValue(elements.totalAccounts, data.total || 0);
     } catch (error) {
-        console.error('加载统计信息失败:', error);
+        console.error('Tải thống kê thất bại:', error);
     }
 }
 
@@ -228,7 +228,7 @@ async function loadAccounts() {
     if (isLoading) return;
     isLoading = true;
 
-    // 显示加载状态
+    // 显示加载Trạng thái
     elements.table.innerHTML = `
         <tr>
             <td colspan="9">
@@ -269,14 +269,14 @@ async function loadAccounts() {
         renderAccounts(data.accounts);
         updatePagination();
     } catch (error) {
-        console.error('加载账号列表失败:', error);
+        console.error('Tải danh sách tài khoản thất bại:', error);
         elements.table.innerHTML = `
             <tr>
                 <td colspan="9">
                     <div class="empty-state">
                         <div class="empty-state-icon">❌</div>
-                        <div class="empty-state-title">加载失败</div>
-                        <div class="empty-state-description">请检查网络连接后重试</div>
+                        <div class="empty-state-title">Tải thất bại</div>
+                        <div class="empty-state-description">Vui lòng kiểm tra kết nối mạng rồi thử lại</div>
                     </div>
                 </td>
             </tr>
@@ -294,8 +294,8 @@ function renderAccounts(accounts) {
                 <td colspan="9">
                     <div class="empty-state">
                         <div class="empty-state-icon">📭</div>
-                        <div class="empty-state-title">暂无数据</div>
-                        <div class="empty-state-description">没有找到符合条件的账号记录</div>
+                        <div class="empty-state-title">Không có dữ liệu</div>
+                        <div class="empty-state-description">Không tìm thấy tài khoản nào phù hợp</div>
                     </div>
                 </td>
             </tr>
@@ -313,14 +313,14 @@ function renderAccounts(accounts) {
             <td>
                 <span style="display:inline-flex;align-items:center;gap:4px;">
                     <span class="email-cell" title="${escapeHtml(account.email)}">${escapeHtml(account.email)}</span>
-                    <button class="btn-copy-icon copy-email-btn" data-email="${escapeHtml(account.email)}" title="复制邮箱">📋</button>
+                    <button class="btn-copy-icon copy-email-btn" data-email="${escapeHtml(account.email)}" title="Sao chép email">📋</button>
                 </span>
             </td>
             <td class="password-cell">
                 ${account.password
                     ? `<span style="display:inline-flex;align-items:center;gap:4px;">
-                        <span class="password-hidden" data-pwd="${escapeHtml(account.password)}" onclick="togglePassword(this, this.dataset.pwd)" title="点击查看">${escapeHtml(account.password.substring(0, 4) + '****')}</span>
-                        <button class="btn-copy-icon copy-pwd-btn" data-pwd="${escapeHtml(account.password)}" title="复制密码">📋</button>
+                        <span class="password-hidden" data-pwd="${escapeHtml(account.password)}" onclick="togglePassword(this, this.dataset.pwd)" title="Nhấn để xem">${escapeHtml(account.password.substring(0, 4) + '****')}</span>
+                        <button class="btn-copy-icon copy-pwd-btn" data-pwd="${escapeHtml(account.password)}" title="Sao chép mật khẩu">📋</button>
                        </span>`
                     : '-'}
             </td>
@@ -329,14 +329,14 @@ function renderAccounts(accounts) {
             <td>
                 <div class="cpa-status">
                     ${account.cpa_uploaded
-                        ? `<span class="badge uploaded" title="已上传于 ${format.date(account.cpa_uploaded_at)}">✓</span>`
+                        ? `<span class="badge uploaded" title="Đã tải lên lúc ${format.date(account.cpa_uploaded_at)}">✓</span>`
                         : `<span class="badge pending">-</span>`}
                 </div>
             </td>
             <td>
                 <div class="cpa-status">
                     ${account.newapi_uploaded
-                        ? `<span class="badge uploaded" title="已上传于 ${format.date(account.newapi_uploaded_at)}">✓</span>`
+                        ? `<span class="badge uploaded" title="Đã tải lên lúc ${format.date(account.newapi_uploaded_at)}">✓</span>`
                         : `<span class="badge pending">-</span>`}
                 </div>
             </td>
@@ -350,17 +350,17 @@ function renderAccounts(accounts) {
             <td>${format.date(account.last_refresh) || '-'}</td>
             <td>
                 <div style="display:flex;gap:4px;align-items:center;white-space:nowrap;">
-                    <button class="btn btn-secondary btn-sm" onclick="viewAccount(${account.id})">详情</button>
+                    <button class="btn btn-secondary btn-sm" onclick="viewAccount(${account.id})">Chi tiết</button>
                     <div class="dropdown" style="position:relative;">
-                        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleMoreMenu(this)">更多</button>
+                        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleMoreMenu(this)">Thêm</button>
                         <div class="dropdown-menu" style="min-width:100px;">
-                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);refreshToken(${account.id})">刷新</a>
-                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);uploadAccount(${account.id})">上传</a>
-                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);markSubscription(${account.id})">标记</a>
-                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);checkInboxCode(${account.id})">收件箱</a>
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);refreshToken(${account.id})">Làm mới</a>
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);uploadAccount(${account.id})">Tải lên</a>
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);markSubscription(${account.id})">Đánh dấu</a>
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeMoreMenu(this);checkInboxCode(${account.id})">Hộp thư đến</a>
                         </div>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteAccount(${account.id}, '${escapeHtml(account.email)}')">删除</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAccount(${account.id}, '${escapeHtml(account.email)}')">Xóa</button>
                 </div>
             </td>
         </tr>
@@ -376,7 +376,7 @@ function renderAccounts(accounts) {
                 selectedAccounts.delete(id);
                 selectAllPages = false;
             }
-            // 同步全选框状态
+            // 同步全选框Trạng thái
             const allChecked = elements.table.querySelectorAll('input[type="checkbox"][data-id]');
             const checkedCount = elements.table.querySelectorAll('input[type="checkbox"][data-id]:checked').length;
             elements.selectAll.checked = allChecked.length > 0 && checkedCount === allChecked.length;
@@ -386,7 +386,7 @@ function renderAccounts(accounts) {
         });
     });
 
-    // 绑定复制邮箱按钮
+    // 绑定Sao chép email按钮
     elements.table.querySelectorAll('.copy-email-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -394,7 +394,7 @@ function renderAccounts(accounts) {
         });
     });
 
-    // 绑定复制密码按钮
+    // 绑定Sao chép mật khẩu按钮
     elements.table.querySelectorAll('.copy-pwd-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -402,7 +402,7 @@ function renderAccounts(accounts) {
         });
     });
 
-    // 渲染后同步全选框状态
+    // 渲染后同步全选框Trạng thái
     const allCbs = elements.table.querySelectorAll('input[type="checkbox"][data-id]');
     const checkedCbs = elements.table.querySelectorAll('input[type="checkbox"][data-id]:checked');
     elements.selectAll.checked = allCbs.length > 0 && checkedCbs.length === allCbs.length;
@@ -410,7 +410,7 @@ function renderAccounts(accounts) {
     renderSelectAllBanner();
 }
 
-// 切换密码显示
+// 切换Mật khẩu显示
 function togglePassword(element, password) {
     if (element.dataset.revealed === 'true') {
         element.textContent = password.substring(0, 4) + '****';
@@ -430,10 +430,10 @@ function updatePagination() {
     elements.prevPage.disabled = currentPage <= 1;
     elements.nextPage.disabled = currentPage >= totalPages;
 
-    elements.pageInfo.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+    elements.pageInfo.textContent = `Trang ${currentPage} / ${totalPages}`;
 }
 
-// 重置全选所有页状态
+// 重置全选所有页Trạng thái
 function resetSelectAllPages() {
     selectAllPages = false;
     selectedAccounts.clear();
@@ -484,9 +484,9 @@ function renderSelectAllBanner() {
     }
 
     if (selectAllPages) {
-        banner.innerHTML = `已选中全部 <strong>${totalAccounts}</strong> 条记录。<button onclick="resetSelectAllPages()" style="margin-left:8px;color:var(--primary-color,#1a73e8);background:none;border:none;cursor:pointer;text-decoration:underline;">取消全选</button>`;
+        banner.innerHTML = `Đã chọn tất cả <strong>${totalAccounts}</strong> bản ghi.<button onclick="resetSelectAllPages()" style="margin-left:8px;color:var(--primary-color,#1a73e8);background:none;border:none;cursor:pointer;text-decoration:underline;">Bỏ chọn tất cả</button>`;
     } else {
-        banner.innerHTML = `当前页已全选 <strong>${checkedOnPage}</strong> 条。<button onclick="selectAllPagesAction()" style="margin-left:8px;color:var(--primary-color,#1a73e8);background:none;border:none;cursor:pointer;text-decoration:underline;">选择全部 ${totalAccounts} 条</button>`;
+        banner.innerHTML = `Đã chọn toàn bộ <strong>${checkedOnPage}</strong> mục trên trang hiện tại.<button onclick="selectAllPagesAction()" style="margin-left:8px;color:var(--primary-color,#1a73e8);background:none;border:none;cursor:pointer;text-decoration:underline;">Chọn toàn bộ ${totalAccounts} mục</button>`;
     }
 }
 
@@ -510,55 +510,55 @@ function updateBatchButtons() {
     const codexAuthBtn = document.getElementById('codex-auth-login-btn');
     if (codexAuthBtn) codexAuthBtn.disabled = count === 0;
 
-    elements.batchDeleteBtn.textContent = count > 0 ? `删除 (${count})` : '删除';
-    elements.batchRefreshBtn.textContent = count > 0 ? `🔄 刷新 (${count})` : '🔄 刷新Token';
-    elements.batchValidateBtn.textContent = count > 0 ? `✅ 验证 (${count})` : '✅ 验证Token';
-    elements.batchUploadBtn.textContent = count > 0 ? `☁️ 上传 (${count})` : '☁️ 上传';
-    elements.batchCheckSubBtn.textContent = count > 0 ? `🔍 检测 (${count})` : '🔍 检测订阅';
+    elements.batchDeleteBtn.textContent = count > 0 ? `Xóa (${count})` : 'Xóa';
+    elements.batchRefreshBtn.textContent = count > 0 ? `🔄 Làm mới (${count})` : '🔄 Làm mớiToken';
+    elements.batchValidateBtn.textContent = count > 0 ? `✅ Xác minh (${count})` : '✅ Xác minh token';
+    elements.batchUploadBtn.textContent = count > 0 ? `☁️ Tải lên (${count})` : '☁️ Tải lên';
+    elements.batchCheckSubBtn.textContent = count > 0 ? `🔍 Kiểm tra (${count})` : '🔍 Kiểm tra gói';
 }
 
-// 刷新单个账号Token
+// Làm mới单个账号Token
 async function refreshToken(id) {
     if (refreshingAccountIds.has(id)) {
-        toast.info('该账号正在刷新，请稍候...');
+        toast.info('Tài khoản này đang được làm mới, vui lòng chờ...');
         return;
     }
     refreshingAccountIds.add(id);
 
     try {
-        toast.info('正在刷新Token...');
+        toast.info('Đang làm mới token...');
         const result = await api.post(`/accounts/${id}/refresh`);
 
         if (result.success) {
-            toast.success('Token刷新成功');
+            toast.success('Làm mới token thành công');
             loadAccounts();
         } else {
-            toast.error('刷新失败: ' + (result.error || '未知错误'));
+            toast.error('Làm mới thất bại: ' + (result.error || 'Lỗi không xác định'));
         }
     } catch (error) {
-        toast.error('刷新失败: ' + error.message);
+        toast.error('Làm mới thất bại: ' + error.message);
     } finally {
         refreshingAccountIds.delete(id);
     }
 }
 
-// 批量刷新Token
+// 批量Làm mớiToken
 async function handleBatchRefresh() {
     const count = getEffectiveCount();
     if (count === 0) return;
 
-    const confirmed = await confirm(`确定要刷新选中的 ${count} 个账号的Token吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn làm mới token cho ${count} tài khoản đã chọn không?`);
     if (!confirmed) return;
 
     elements.batchRefreshBtn.disabled = true;
-    elements.batchRefreshBtn.textContent = '刷新中...';
+    elements.batchRefreshBtn.textContent = 'Đang làm mới...';
 
     try {
         const result = await api.post('/accounts/batch-refresh', buildBatchPayload());
-        toast.success(`成功刷新 ${result.success_count} 个，失败 ${result.failed_count} 个`);
+        toast.success(`Làm mới thành công ${result.success_count} tài khoản, thất bại ${result.failed_count} tài khoản`);
         loadAccounts();
     } catch (error) {
-        toast.error('批量刷新失败: ' + error.message);
+        toast.error('Làm mới hàng loạt thất bại: ' + error.message);
     } finally {
         updateBatchButtons();
     }
@@ -568,28 +568,28 @@ async function handleBatchRefresh() {
 async function handleBatchValidate() {
     if (getEffectiveCount() === 0) return;
     if (isBatchValidating) {
-        toast.info('批量验证进行中，请稍候...');
+        toast.info('Đang xác minh hàng loạt, vui lòng chờ...');
         return;
     }
 
     isBatchValidating = true;
 
     elements.batchValidateBtn.disabled = true;
-    elements.batchValidateBtn.textContent = '验证中...';
+    elements.batchValidateBtn.textContent = 'Đang xác minh...';
 
     try {
         const result = await api.post('/accounts/batch-validate', buildBatchPayload(), { timeoutMs: 120000 });
-        toast.info(`有效: ${result.valid_count}，无效: ${result.invalid_count}`);
+        toast.info(`Hợp lệ: ${result.valid_count}, không hợp lệ: ${result.invalid_count}`);
         loadAccounts();
     } catch (error) {
-        toast.error('批量验证失败: ' + error.message);
+        toast.error('Xác minh hàng loạt thất bại: ' + error.message);
     } finally {
         isBatchValidating = false;
         updateBatchButtons();
     }
 }
 
-// 查看账号详情
+// 查看账号Chi tiết
 async function viewAccount(id) {
     try {
         const account = await api.get(`/accounts/${id}`);
@@ -598,29 +598,29 @@ async function viewAccount(id) {
         elements.modalBody.innerHTML = `
             <div class="info-grid">
                 <div class="info-item">
-                    <span class="label">邮箱</span>
+                    <span class="label">Email</span>
                     <span class="value">
                         ${escapeHtml(account.email)}
-                        <button class="btn btn-ghost btn-sm" onclick="copyToClipboard('${escapeHtml(account.email)}')" title="复制">
+                        <button class="btn btn-ghost btn-sm" onclick="copyToClipboard('${escapeHtml(account.email)}')" title="Sao chép">
                             📋
                         </button>
                     </span>
                 </div>
                 <div class="info-item">
-                    <span class="label">密码</span>
+                    <span class="label">Mật khẩu</span>
                     <span class="value">
                         ${account.password
                             ? `<code style="font-size: 0.75rem;">${escapeHtml(account.password)}</code>
-                               <button class="btn btn-ghost btn-sm" onclick="copyToClipboard('${escapeHtml(account.password)}')" title="复制">📋</button>`
+                               <button class="btn btn-ghost btn-sm" onclick="copyToClipboard('${escapeHtml(account.password)}')" title="Sao chép">📋</button>`
                             : '-'}
                     </span>
                 </div>
                 <div class="info-item">
-                    <span class="label">邮箱服务</span>
+                    <span class="label">Dịch vụ email</span>
                     <span class="value">${getServiceTypeText(account.email_service)}</span>
                 </div>
                 <div class="info-item">
-                    <span class="label">状态</span>
+                    <span class="label">Trạng thái</span>
                     <span class="value">
                         <span class="status-badge ${getStatusClass('account', account.status)}">
                             ${getStatusText('account', account.status)}
@@ -628,11 +628,11 @@ async function viewAccount(id) {
                     </span>
                 </div>
                 <div class="info-item">
-                    <span class="label">注册时间</span>
+                    <span class="label">Thời điểm đăng ký</span>
                     <span class="value">${format.date(account.registered_at)}</span>
                 </div>
                 <div class="info-item">
-                    <span class="label">最后刷新</span>
+                    <span class="label">Làm mới lần cuối</span>
                     <span class="value">${format.date(account.last_refresh) || '-'}</span>
                 </div>
                 <div class="info-item" style="grid-column: span 2;">
@@ -668,68 +668,68 @@ async function viewAccount(id) {
                     </div>
                 </div>
                 <div class="info-item" style="grid-column: span 2;">
-                    <span class="label">Cookies（支付用）</span>
+                    <span class="label">Cookies (dùng cho thanh toán)</span>
                     <div class="value">
                         <textarea id="cookies-input-${id}" rows="3"
                             style="width:100%;font-size:0.7rem;font-family:var(--font-mono);background:var(--surface-hover);border:1px solid var(--border);border-radius:4px;padding:6px;color:var(--text-primary);resize:vertical;"
-                            placeholder="粘贴完整 cookie 字符串，留空则清除">${escapeHtml(account.cookies || '')}</textarea>
+                            placeholder="Dán toàn bộ chuỗi cookie; để trống để xóa">${escapeHtml(account.cookies || '')}</textarea>
                         <button class="btn btn-secondary btn-sm" style="margin-top:4px" onclick="saveCookies(${id})">
-                            保存 Cookies
+                            Lưu cookies
                         </button>
                     </div>
                 </div>
             </div>
             <div style="margin-top: var(--spacing-lg); display: flex; gap: var(--spacing-sm);">
                 <button class="btn btn-primary" onclick="refreshToken(${id}); elements.detailModal.classList.remove('active');">
-                    🔄 刷新Token
+                    🔄 Làm mớiToken
                 </button>
             </div>
         `;
 
         elements.detailModal.classList.add('active');
     } catch (error) {
-        toast.error('加载账号详情失败: ' + error.message);
+        toast.error('Tải chi tiết tài khoản thất bại: ' + error.message);
     }
 }
 
-// 复制邮箱
+// Sao chép email
 function copyEmail(email) {
     copyToClipboard(email);
 }
 
-// 删除账号
+// Xóa账号
 async function deleteAccount(id, email) {
-    const confirmed = await confirm(`确定要删除账号 ${email} 吗？此操作不可恢复。`);
+    const confirmed = await confirm(`Bạn có chắc muốn xóa tài khoản ${email} không? Hành động này không thể hoàn tác.`);
     if (!confirmed) return;
 
     try {
         await api.delete(`/accounts/${id}`);
-        toast.success('账号已删除');
+        toast.success('Tài khoản đã được xóa');
         selectedAccounts.delete(id);
         loadStats();
         loadAccounts();
     } catch (error) {
-        toast.error('删除失败: ' + error.message);
+        toast.error('Xóa thất bại: ' + error.message);
     }
 }
 
-// 批量删除
+// 批量Xóa
 async function handleBatchDelete() {
     const count = getEffectiveCount();
     if (count === 0) return;
 
-    const confirmed = await confirm(`确定要删除选中的 ${count} 个账号吗？此操作不可恢复。`);
+    const confirmed = await confirm(`Bạn có chắc muốn xóa ${count} tài khoản đã chọn không? Hành động này không thể hoàn tác.`);
     if (!confirmed) return;
 
     try {
         const result = await api.post('/accounts/batch-delete', buildBatchPayload());
-        toast.success(`成功删除 ${result.deleted_count} 个账号`);
+        toast.success(`Xóa thành công ${result.deleted_count} tài khoản`);
         selectedAccounts.clear();
         selectAllPages = false;
         loadStats();
         loadAccounts();
     } catch (error) {
-        toast.error('删除失败: ' + error.message);
+        toast.error('Xóa thất bại: ' + error.message);
     }
 }
 
@@ -737,11 +737,11 @@ async function handleBatchDelete() {
 async function exportAccounts(format) {
     const count = getEffectiveCount();
     if (count === 0) {
-        toast.warning('请先选择要导出的账号');
+        toast.warning('Vui lòng chọn tài khoản cần xuất trước');
         return;
     }
 
-    toast.info(`正在导出 ${count} 个账号...`);
+    toast.info(`Đang xuất ${count} tài khoản...`);
 
     try {
         const response = await fetch('/api/accounts/export/' + format, {
@@ -786,10 +786,10 @@ async function exportAccounts(format) {
         window.URL.revokeObjectURL(url);
         a.remove();
 
-        toast.success('导出成功');
+        toast.success('Xuất thành công');
     } catch (error) {
-        console.error('导出失败:', error);
-        toast.error('导出失败: ' + error.message);
+        console.error('Xuất thất bại:', error);
+        toast.error('Xuất thất bại: ' + error.message);
     }
 }
 
@@ -801,9 +801,9 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ============== CPA 服务选择 ==============
+// ============== CPA 服务Chọn ==============
 
-// 弹出 CPA 服务选择框，返回 Promise<{cpa_service_id: number|null}|null>
+// 弹出 CPA 服务Chọn框，返回 Promise<{cpa_service_id: number|null}|null>
 // null 表示用户取消，{cpa_service_id: null} 表示使用全局配置
 function selectCpaService() {
     return new Promise(async (resolve) => {
@@ -814,7 +814,7 @@ function selectCpaService() {
         const globalBtn = document.getElementById('cpa-use-global-btn');
 
         // 加载服务列表
-        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">加载中...</div>';
+        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">Đang tải...</div>';
         modal.classList.add('active');
 
         let services = [];
@@ -825,7 +825,7 @@ function selectCpaService() {
         }
 
         if (services.length === 0) {
-            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">暂无已启用的 CPA 服务，将使用全局配置</div>';
+            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">Không có dịch vụ CPA nào đang bật, sẽ dùng cấu hình toàn cục</div>';
         } else {
             listEl.innerHTML = services.map(s => `
                 <div class="cpa-service-item" data-id="${s.id}" style="
@@ -842,7 +842,7 @@ function selectCpaService() {
                         <div style="font-weight:500;">${escapeHtml(s.name)}</div>
                         <div style="font-size:0.8rem;color:var(--text-muted);">${escapeHtml(s.api_url)}</div>
                     </div>
-                    <span class="badge" style="background:var(--success-color);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">选择</span>
+                    <span class="badge" style="background:var(--success-color);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">Chọn</span>
                 </div>
             `).join('');
 
@@ -871,13 +871,13 @@ function selectCpaService() {
     });
 }
 
-// 统一上传入口：弹出目标选择
+// 统一Tải lên入口：弹出目标Chọn
 async function uploadAccount(id) {
     const targets = [
-        { label: '☁️ 上传到 CPA', value: 'cpa' },
-        { label: '🔗 上传到 Sub2API', value: 'sub2api' },
-        { label: '🚀 上传到 Team Manager', value: 'tm' },
-        { label: '🧩 上传到 NEWAPI', value: 'newapi' },
+        { label: '☁️ Tải lên CPA', value: 'cpa' },
+        { label: '🔗 Tải lên Sub2API', value: 'sub2api' },
+        { label: '🚀 Tải lên Team Manager', value: 'tm' },
+        { label: '🧩 Tải lên NEWAPI', value: 'newapi' },
     ];
 
     const choice = await new Promise((resolve) => {
@@ -886,7 +886,7 @@ async function uploadAccount(id) {
         modal.innerHTML = `
             <div class="modal-content" style="max-width:360px;">
                 <div class="modal-header">
-                    <h3>☁️ 选择上传目标</h3>
+                    <h3>☁️ Chọn đích tải lên</h3>
                     <button class="modal-close" id="_upload-close">&times;</button>
                 </div>
                 <div class="modal-body" style="display:flex;flex-direction:column;gap:8px;">
@@ -910,29 +910,29 @@ async function uploadAccount(id) {
     if (choice === 'newapi') return uploadToNewapi(id);
 }
 
-// 上传单个账号到CPA
+// Tải lên单个账号到CPA
 async function uploadToCpa(id) {
     const choice = await selectCpaService();
     if (choice === null) return;  // 用户取消
 
     try {
-        toast.info('正在上传到CPA...');
+        toast.info('Đang tải lên CPA...');
         const payload = {};
         if (choice.cpa_service_id != null) payload.cpa_service_id = choice.cpa_service_id;
         const result = await api.post(`/accounts/${id}/upload-cpa`, payload);
 
         if (result.success) {
-            toast.success('上传成功');
+            toast.success('Tải lên thành công');
             loadAccounts();
         } else {
-            toast.error('上传失败: ' + (result.error || '未知错误'));
+            toast.error('Tải lên thất bại: ' + (result.error || 'Lỗi không xác định'));
         }
     } catch (error) {
-        toast.error('上传失败: ' + error.message);
+        toast.error('Tải lên thất bại: ' + error.message);
     }
 }
 
-// 批量上传到CPA
+// 批量Tải lên到CPA
 async function handleBatchUploadCpa() {
     const count = getEffectiveCount();
     if (count === 0) return;
@@ -940,78 +940,78 @@ async function handleBatchUploadCpa() {
     const choice = await selectCpaService();
     if (choice === null) return;  // 用户取消
 
-    const confirmed = await confirm(`确定要将选中的 ${count} 个账号上传到CPA吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn tải lên CPA cho ${count} tài khoản đã chọn không?`);
     if (!confirmed) return;
 
     elements.batchUploadBtn.disabled = true;
-    elements.batchUploadBtn.textContent = '上传中...';
+    elements.batchUploadBtn.textContent = 'Đang tải lên...';
 
     try {
         const payload = buildBatchPayload();
         if (choice.cpa_service_id != null) payload.cpa_service_id = choice.cpa_service_id;
         const result = await api.post('/accounts/batch-upload-cpa', payload);
 
-        let message = `成功: ${result.success_count}`;
-        if (result.failed_count > 0) message += `, 失败: ${result.failed_count}`;
-        if (result.skipped_count > 0) message += `, 跳过: ${result.skipped_count}`;
+        let message = `Thành công: ${result.success_count}`;
+        if (result.failed_count > 0) message += `, thất bại: ${result.failed_count}`;
+        if (result.skipped_count > 0) message += `, bỏ qua: ${result.skipped_count}`;
 
         toast.success(message);
         loadAccounts();
     } catch (error) {
-        toast.error('批量上传失败: ' + error.message);
+        toast.error('Tải lên hàng loạt thất bại: ' + error.message);
     } finally {
         updateBatchButtons();
     }
 }
 
-// ============== 订阅状态 ==============
+// ============== 订阅Trạng thái ==============
 
-// 手动标记订阅类型
+// 手动Đánh dấu订阅类型
 async function markSubscription(id) {
-    const type = prompt('请输入订阅类型 (plus / team / free):', 'plus');
+    const type = prompt('Nhập loại gói (plus / team / free):', 'plus');
     if (!type) return;
     if (!['plus', 'team', 'free'].includes(type.trim().toLowerCase())) {
-        toast.error('无效的订阅类型，请输入 plus、team 或 free');
+        toast.error('Loại gói không hợp lệ, vui lòng nhập plus, team hoặc free');
         return;
     }
     try {
         await api.post(`/payment/accounts/${id}/mark-subscription`, {
             subscription_type: type.trim().toLowerCase()
         });
-        toast.success('订阅状态已更新');
+        toast.success('Trạng thái gói đã được cập nhật');
         loadAccounts();
     } catch (e) {
-        toast.error('标记失败: ' + e.message);
+        toast.error('Đánh dấu thất bại: ' + e.message);
     }
 }
 
-// 批量检测订阅状态
+// 批量检测订阅Trạng thái
 async function handleBatchCheckSubscription() {
     const count = getEffectiveCount();
     if (count === 0) return;
-    const confirmed = await confirm(`确定要检测选中的 ${count} 个账号的订阅状态吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn kiểm tra trạng thái gói của ${count} tài khoản đã chọn không?`);
     if (!confirmed) return;
 
     elements.batchCheckSubBtn.disabled = true;
-    elements.batchCheckSubBtn.textContent = '检测中...';
+    elements.batchCheckSubBtn.textContent = 'Đang kiểm tra...';
 
     try {
         const result = await api.post('/payment/accounts/batch-check-subscription', buildBatchPayload());
-        let message = `成功: ${result.success_count}`;
-        if (result.failed_count > 0) message += `, 失败: ${result.failed_count}`;
+        let message = `Thành công: ${result.success_count}`;
+        if (result.failed_count > 0) message += `, thất bại: ${result.failed_count}`;
         toast.success(message);
         loadAccounts();
     } catch (e) {
-        toast.error('批量检测失败: ' + e.message);
+        toast.error('Kiểm tra hàng loạt thất bại: ' + e.message);
     } finally {
         updateBatchButtons();
     }
 }
 
-// ============== Sub2API 上传 ==============
+// ============== Sub2API Tải lên ==============
 
-// 弹出 Sub2API 服务选择框，返回 Promise<{service_id: number|null}|null>
-// null 表示用户取消，{service_id: null} 表示自动选择
+// 弹出 Sub2API 服务Chọn框，返回 Promise<{service_id: number|null}|null>
+// null 表示用户取消，{service_id: null} 表示自动Chọn
 function selectSub2ApiService() {
     return new Promise(async (resolve) => {
         const modal = document.getElementById('sub2api-service-modal');
@@ -1020,7 +1020,7 @@ function selectSub2ApiService() {
         const cancelBtn = document.getElementById('cancel-sub2api-modal-btn');
         const autoBtn = document.getElementById('sub2api-use-auto-btn');
 
-        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">加载中...</div>';
+        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">Đang tải...</div>';
         modal.classList.add('active');
 
         let services = [];
@@ -1031,7 +1031,7 @@ function selectSub2ApiService() {
         }
 
         if (services.length === 0) {
-            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">暂无已启用的 Sub2API 服务，将自动选择第一个</div>';
+            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">Không có dịch vụ Sub2API nào đang bật, sẽ tự động chọn dịch vụ đầu tiên</div>';
         } else {
             listEl.innerHTML = services.map(s => `
                 <div class="sub2api-service-item" data-id="${s.id}" style="
@@ -1048,7 +1048,7 @@ function selectSub2ApiService() {
                         <div style="font-weight:500;">${escapeHtml(s.name)}</div>
                         <div style="font-size:0.8rem;color:var(--text-muted);">${escapeHtml(s.api_url)}</div>
                     </div>
-                    <span class="badge" style="background:var(--primary);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">选择</span>
+                    <span class="badge" style="background:var(--primary);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">Chọn</span>
                 </div>
             `).join('');
 
@@ -1077,7 +1077,7 @@ function selectSub2ApiService() {
     });
 }
 
-// 批量上传到 Sub2API
+// 批量Tải lên到 Sub2API
 async function handleBatchUploadSub2Api() {
     const count = getEffectiveCount();
     if (count === 0) return;
@@ -1085,54 +1085,54 @@ async function handleBatchUploadSub2Api() {
     const choice = await selectSub2ApiService();
     if (choice === null) return;  // 用户取消
 
-    const confirmed = await confirm(`确定要将选中的 ${count} 个账号上传到 Sub2API 吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn tải lên Sub2API cho ${count} tài khoản đã chọn không?`);
     if (!confirmed) return;
 
     elements.batchUploadBtn.disabled = true;
-    elements.batchUploadBtn.textContent = '上传中...';
+    elements.batchUploadBtn.textContent = 'Đang tải lên...';
 
     try {
         const payload = buildBatchPayload();
         if (choice.service_id != null) payload.service_id = choice.service_id;
         const result = await api.post('/accounts/batch-upload-sub2api', payload);
 
-        let message = `成功: ${result.success_count}`;
-        if (result.failed_count > 0) message += `, 失败: ${result.failed_count}`;
-        if (result.skipped_count > 0) message += `, 跳过: ${result.skipped_count}`;
+        let message = `Thành công: ${result.success_count}`;
+        if (result.failed_count > 0) message += `, thất bại: ${result.failed_count}`;
+        if (result.skipped_count > 0) message += `, bỏ qua: ${result.skipped_count}`;
 
         toast.success(message);
         loadAccounts();
     } catch (error) {
-        toast.error('批量上传失败: ' + error.message);
+        toast.error('Tải lên hàng loạt thất bại: ' + error.message);
     } finally {
         updateBatchButtons();
     }
 }
 
-// ============== Team Manager 上传 ==============
+// ============== Team Manager Tải lên ==============
 
-// 上传单账号到 Sub2API
+// Tải lên单账号到 Sub2API
 async function uploadToSub2Api(id) {
     const choice = await selectSub2ApiService();
     if (choice === null) return;
     try {
-        toast.info('正在上传到 Sub2API...');
+        toast.info('Đang tải lên Sub2API...');
         const payload = {};
         if (choice.service_id != null) payload.service_id = choice.service_id;
         const result = await api.post(`/accounts/${id}/upload-sub2api`, payload);
         if (result.success) {
-            toast.success('上传成功');
+            toast.success('Tải lên thành công');
             loadAccounts();
         } else {
-            toast.error('上传失败: ' + (result.error || result.message || '未知错误'));
+            toast.error('Tải lên thất bại: ' + (result.error || result.message || 'Lỗi không xác định'));
         }
     } catch (e) {
-        toast.error('上传失败: ' + e.message);
+        toast.error('Tải lên thất bại: ' + e.message);
     }
 }
 
-// 弹出 Team Manager 服务选择框，返回 Promise<{service_id: number|null}|null>
-// null 表示用户取消，{service_id: null} 表示自动选择
+// 弹出 Team Manager 服务Chọn框，返回 Promise<{service_id: number|null}|null>
+// null 表示用户取消，{service_id: null} 表示自动Chọn
 function selectTmService() {
     return new Promise(async (resolve) => {
         const modal = document.getElementById('tm-service-modal');
@@ -1141,7 +1141,7 @@ function selectTmService() {
         const cancelBtn = document.getElementById('cancel-tm-modal-btn');
         const autoBtn = document.getElementById('tm-use-auto-btn');
 
-        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">加载中...</div>';
+        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">Đang tải...</div>';
         modal.classList.add('active');
 
         let services = [];
@@ -1152,7 +1152,7 @@ function selectTmService() {
         }
 
         if (services.length === 0) {
-            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">暂无已启用的 Team Manager 服务，将自动选择第一个</div>';
+            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">Không có dịch vụ Team Manager nào đang bật, sẽ tự động chọn dịch vụ đầu tiên</div>';
         } else {
             listEl.innerHTML = services.map(s => `
                 <div class="tm-service-item" data-id="${s.id}" style="
@@ -1169,7 +1169,7 @@ function selectTmService() {
                         <div style="font-weight:500;">${escapeHtml(s.name)}</div>
                         <div style="font-size:0.8rem;color:var(--text-muted);">${escapeHtml(s.api_url)}</div>
                     </div>
-                    <span class="badge" style="background:var(--primary);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">选择</span>
+                    <span class="badge" style="background:var(--primary);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">Chọn</span>
                 </div>
             `).join('');
 
@@ -1198,26 +1198,26 @@ function selectTmService() {
     });
 }
 
-// 上传单账号到 Team Manager
+// Tải lên单账号到 Team Manager
 async function uploadToTm(id) {
     const choice = await selectTmService();
     if (choice === null) return;
     try {
-        toast.info('正在上传到 Team Manager...');
+        toast.info('Đang tải lên Team Manager...');
         const payload = {};
         if (choice.service_id != null) payload.service_id = choice.service_id;
         const result = await api.post(`/accounts/${id}/upload-tm`, payload);
         if (result.success) {
-            toast.success('上传成功');
+            toast.success('Tải lên thành công');
         } else {
-            toast.error('上传失败: ' + (result.message || '未知错误'));
+            toast.error('Tải lên thất bại: ' + (result.message || 'Lỗi không xác định'));
         }
     } catch (e) {
-        toast.error('上传失败: ' + e.message);
+        toast.error('Tải lên thất bại: ' + e.message);
     }
 }
 
-// 批量上传到 Team Manager
+// 批量Tải lên到 Team Manager
 async function handleBatchUploadTm() {
     const count = getEffectiveCount();
     if (count === 0) return;
@@ -1225,29 +1225,29 @@ async function handleBatchUploadTm() {
     const choice = await selectTmService();
     if (choice === null) return;  // 用户取消
 
-    const confirmed = await confirm(`确定要将选中的 ${count} 个账号上传到 Team Manager 吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn tải lên Team Manager cho ${count} tài khoản đã chọn không?`);
     if (!confirmed) return;
 
     elements.batchUploadBtn.disabled = true;
-    elements.batchUploadBtn.textContent = '上传中...';
+    elements.batchUploadBtn.textContent = 'Đang tải lên...';
 
     try {
         const payload = buildBatchPayload();
         if (choice.service_id != null) payload.service_id = choice.service_id;
         const result = await api.post('/accounts/batch-upload-tm', payload);
-        let message = `成功: ${result.success_count}`;
-        if (result.failed_count > 0) message += `, 失败: ${result.failed_count}`;
-        if (result.skipped_count > 0) message += `, 跳过: ${result.skipped_count}`;
+        let message = `Thành công: ${result.success_count}`;
+        if (result.failed_count > 0) message += `, thất bại: ${result.failed_count}`;
+        if (result.skipped_count > 0) message += `, bỏ qua: ${result.skipped_count}`;
         toast.success(message);
         loadAccounts();
     } catch (e) {
-        toast.error('批量上传失败: ' + e.message);
+        toast.error('Tải lên hàng loạt thất bại: ' + e.message);
     } finally {
         updateBatchButtons();
     }
 }
 
-// ============== NEWAPI 上传 ==============
+// ============== NEWAPI Tải lên ==============
 
 function selectNewapiService() {
     return new Promise(async (resolve) => {
@@ -1257,7 +1257,7 @@ function selectNewapiService() {
         const cancelBtn = document.getElementById('cancel-newapi-modal-btn');
         const autoBtn = document.getElementById('newapi-use-auto-btn');
 
-        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">加载中...</div>';
+        listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted)">Đang tải...</div>';
         modal.classList.add('active');
 
         let services = [];
@@ -1268,7 +1268,7 @@ function selectNewapiService() {
         }
 
         if (services.length === 0) {
-            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">暂无已启用的 NEWAPI 服务，将自动选择第一个</div>';
+            listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:12px;">Không có dịch vụ NEWAPI nào đang bật, sẽ tự động chọn dịch vụ đầu tiên</div>';
         } else {
             listEl.innerHTML = services.map(s => `
                 <div class="newapi-service-item" data-id="${s.id}" style="
@@ -1285,7 +1285,7 @@ function selectNewapiService() {
                         <div style="font-weight:500;">${escapeHtml(s.name)}</div>
                         <div style="font-size:0.8rem;color:var(--text-muted);">${escapeHtml(s.api_url)}</div>
                     </div>
-                    <span class="badge" style="background:var(--primary);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">选择</span>
+                    <span class="badge" style="background:var(--primary);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;">Chọn</span>
                 </div>
             `).join('');
 
@@ -1318,17 +1318,17 @@ async function uploadToNewapi(id) {
     const choice = await selectNewapiService();
     if (choice === null) return;
     try {
-        toast.info('正在上传到 NEWAPI...');
+        toast.info('Đang tải lên NEWAPI...');
         const payload = {};
         if (choice.service_id != null) payload.service_id = choice.service_id;
         const result = await api.post(`/accounts/${id}/upload-newapi`, payload);
         if (result.success) {
-            toast.success('上传成功');
+            toast.success('Tải lên thành công');
         } else {
-            toast.error('上传失败: ' + (result.message || '未知错误'));
+            toast.error('Tải lên thất bại: ' + (result.message || 'Lỗi không xác định'));
         }
     } catch (e) {
-        toast.error('上传失败: ' + e.message);
+        toast.error('Tải lên thất bại: ' + e.message);
     }
 }
 
@@ -1339,33 +1339,33 @@ async function handleBatchUploadNewapi() {
     const choice = await selectNewapiService();
     if (choice === null) return;
 
-    const confirmed = await confirm(`确定要将选中的 ${count} 个账号上传到 NEWAPI 吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn tải lên NEWAPI cho ${count} tài khoản đã chọn không?`);
     if (!confirmed) return;
 
     elements.batchUploadBtn.disabled = true;
-    elements.batchUploadBtn.textContent = '上传中...';
+    elements.batchUploadBtn.textContent = 'Đang tải lên...';
 
     try {
         const payload = buildBatchPayload();
         if (choice.service_id != null) payload.service_id = choice.service_id;
         const result = await api.post('/accounts/batch-upload-newapi', payload);
-        let message = `成功: ${result.success_count}`;
-        if (result.failed_count > 0) message += `, 失败: ${result.failed_count}`;
-        if (result.skipped_count > 0) message += `, 跳过: ${result.skipped_count}`;
+        let message = `Thành công: ${result.success_count}`;
+        if (result.failed_count > 0) message += `, thất bại: ${result.failed_count}`;
+        if (result.skipped_count > 0) message += `, bỏ qua: ${result.skipped_count}`;
         toast.success(message);
         loadAccounts();
     } catch (e) {
-        toast.error('批量上传失败: ' + e.message);
+        toast.error('Tải lên hàng loạt thất bại: ' + e.message);
     } finally {
         updateBatchButtons();
     }
 }
 
-// 更多菜单切换
+// Thêm菜单切换
 function toggleMoreMenu(btn) {
     const menu = btn.nextElementSibling;
     const isActive = menu.classList.contains('active');
-    // 关闭所有其他更多菜单
+    // 关闭所有其他Thêm菜单
     document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
     if (!isActive) menu.classList.add('active');
 }
@@ -1382,24 +1382,24 @@ async function saveCookies(id) {
     const cookiesValue = textarea.value.trim();
     try {
         await api.patch(`/accounts/${id}`, { cookies: cookiesValue });
-        toast.success('Cookies 已保存');
+        toast.success('Cookies đã được lưu');
     } catch (e) {
-        toast.error('保存 Cookies 失败: ' + e.message);
+        toast.error('Lưu cookies thất bại: ' + e.message);
     }
 }
 
-// 查询收件箱验证码
+// 查询Hộp thư đến验证码
 async function checkInboxCode(id) {
-    toast.info('正在查询收件箱...');
+    toast.info('Đang kiểm tra hộp thư đến...');
     try {
         const result = await api.post(`/accounts/${id}/inbox-code`);
         if (result.success) {
             showInboxCodeResult(result.code, result.email);
         } else {
-            toast.error('查询失败: ' + (result.error || '未收到验证码'));
+            toast.error('Truy vấn thất bại: ' + (result.error || 'Chưa nhận được mã xác minh'));
         }
     } catch (error) {
-        toast.error('查询失败: ' + error.message);
+        toast.error('Truy vấn thất bại: ' + error.message);
     }
 }
 
@@ -1407,13 +1407,13 @@ function showInboxCodeResult(code, email) {
     elements.modalBody.innerHTML = `
         <div style="text-align:center; padding:24px 16px;">
             <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
-                ${escapeHtml(email)} 最新验证码
+                ${escapeHtml(email)} - mã xác minh mới nhất
             </div>
             <div style="font-size:36px;font-weight:700;letter-spacing:8px;
                         color:var(--primary);font-family:monospace;margin-bottom:20px;">
                 ${escapeHtml(code)}
             </div>
-            <button class="btn btn-primary" onclick="copyToClipboard('${escapeHtml(code)}')">复制验证码</button>
+            <button class="btn btn-primary" onclick="copyToClipboard('${escapeHtml(code)}')">Sao chép mã xác minh</button>
         </div>
     `;
     elements.detailModal.classList.add('active');
@@ -1426,11 +1426,11 @@ let codexAuthResults = [];
 async function handleCodexAuthLogin() {
     const count = getEffectiveCount();
     if (count === 0) {
-        toast.warning('请先选择要登录的账号');
+        toast.warning('Vui lòng chọn tài khoản cần đăng nhập trước');
         return;
     }
 
-    const confirmed = await confirm(`将对选中的 ${count} 个账号执行 Codex Auth 登录（需要接收邮箱验证码），确定继续吗？`);
+    const confirmed = await confirm(`Bạn sẽ chạy đăng nhập Codex Auth cho ${count} tài khoản đã chọn (cần nhận mã xác minh qua email). Bạn có muốn tiếp tục không?`);
     if (!confirmed) return;
 
     const modal = document.getElementById('codex-auth-modal');
@@ -1439,7 +1439,7 @@ async function handleCodexAuthLogin() {
     const downloadBtn = document.getElementById('codex-auth-download-btn');
 
     logsEl.textContent = '';
-    statusEl.textContent = '正在启动 Codex Auth 登录...';
+    statusEl.textContent = 'Đang khởi chạy đăng nhập Codex Auth...';
     downloadBtn.style.display = 'none';
     codexAuthResults = [];
     modal.classList.add('active');
@@ -1464,7 +1464,7 @@ async function codexAuthLoginSingle(accountId, logsEl, statusEl, downloadBtn) {
 
         if (!response.ok) {
             const err = await response.json();
-            statusEl.textContent = '登录失败: ' + (err.detail || response.statusText);
+            statusEl.textContent = 'Đăng nhập thất bại: ' + (err.detail || response.statusText);
             return;
         }
 
@@ -1489,20 +1489,20 @@ async function codexAuthLoginSingle(accountId, logsEl, statusEl, downloadBtn) {
                         logsEl.scrollTop = logsEl.scrollHeight;
                     } else if (data.type === 'result') {
                         if (data.success && data.auth_json) {
-                            statusEl.textContent = 'Codex Auth 登录成功!';
+                            statusEl.textContent = 'Đăng nhập Codex Auth thành công!';
                             codexAuthResults = [{ email: data.email, auth_json: data.auth_json }];
                             downloadBtn.style.display = 'inline-block';
                             downloadBtn.onclick = () => downloadCodexAuthResults();
                             loadAccounts();
                         } else {
-                            statusEl.textContent = '登录失败: ' + (data.error_message || '未知错误');
+                            statusEl.textContent = 'Đăng nhập thất bại: ' + (data.error_message || 'Lỗi không xác định');
                         }
                     }
                 } catch (e) { /* ignore parse errors */ }
             }
         }
     } catch (error) {
-        statusEl.textContent = '登录失败: ' + error.message;
+        statusEl.textContent = 'Đăng nhập thất bại: ' + error.message;
     }
 }
 
@@ -1517,7 +1517,7 @@ async function codexAuthLoginBatch(logsEl, statusEl, downloadBtn) {
 
         if (!response.ok) {
             const err = await response.json();
-            statusEl.textContent = '批量登录失败: ' + (err.detail || response.statusText);
+            statusEl.textContent = 'Đăng nhập hàng loạt thất bại: ' + (err.detail || response.statusText);
             return;
         }
 
@@ -1543,19 +1543,19 @@ async function codexAuthLoginBatch(logsEl, statusEl, downloadBtn) {
                         logsEl.textContent += data.message + '\n';
                         logsEl.scrollTop = logsEl.scrollHeight;
                     } else if (data.type === 'progress') {
-                        statusEl.textContent = `正在处理 ${data.current}/${data.total}: ${data.email}`;
+                        statusEl.textContent = `Đang xử lý ${data.current}/${data.total}: ${data.email}`;
                     } else if (data.type === 'account_result') {
                         if (data.success) {
                             successCount++;
-                            logsEl.textContent += `[${data.email}] 登录成功\n`;
+                            logsEl.textContent += `[${data.email}] Đăng nhập thành công\n`;
                         } else {
                             failCount++;
-                            logsEl.textContent += `[${data.email}] 登录失败: ${data.error || '未知错误'}\n`;
+                            logsEl.textContent += `[${data.email}] Đăng nhập thất bại: ${data.error || 'Lỗi không xác định'}\n`;
                         }
                         logsEl.scrollTop = logsEl.scrollHeight;
                     } else if (data.type === 'batch_done') {
                         codexAuthResults = data.results || [];
-                        statusEl.textContent = `批量登录完成: 成功 ${successCount}, 失败 ${failCount}`;
+                        statusEl.textContent = `Đăng nhập hàng loạt hoàn tất: thành công ${successCount}, thất bại ${failCount}`;
                         if (codexAuthResults.length > 0) {
                             downloadBtn.style.display = 'inline-block';
                             downloadBtn.onclick = () => downloadCodexAuthResults();
@@ -1566,7 +1566,7 @@ async function codexAuthLoginBatch(logsEl, statusEl, downloadBtn) {
             }
         }
     } catch (error) {
-        statusEl.textContent = '批量登录失败: ' + error.message;
+        statusEl.textContent = 'Đăng nhập hàng loạt thất bại: ' + error.message;
     }
 }
 
@@ -1601,5 +1601,5 @@ function downloadCodexAuthResults() {
             }, i * 300);
         });
     }
-    toast.success(`已下载 ${codexAuthResults.length} 个 auth.json`);
+    toast.success(`Đã tải xuống ${codexAuthResults.length} tài khoản auth.json`);
 }

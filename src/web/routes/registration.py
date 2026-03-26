@@ -345,7 +345,7 @@ def _record_email_service_timeout_backoff(
         return None
 
     timeout_error = OTPTimeoutEmailServiceError(
-        error_message or "等待验证码超时",
+        error_message or "Hết thời gian chờ mã xác minh",
         error_code=error_code,
     )
     if hasattr(email_service, "apply_provider_backoff_state"):
@@ -423,7 +423,7 @@ def _get_batch_snapshot(batch_id: str) -> Optional[dict]:
 def _require_batch_snapshot(batch_id: str) -> dict:
     batch = _get_batch_snapshot(batch_id)
     if batch is None:
-        raise HTTPException(status_code=404, detail="批量任务不存在")
+        raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ hàng loạt")
     return batch
 
 
@@ -490,7 +490,7 @@ def _build_email_service_candidates(
                     "proxy_url": actual_proxy_url,
                 })
             else:
-                raise ValueError("没有可用的自定义域名邮箱服务，请先在设置中配置")
+                raise ValueError("Không có dịch vụ email tên miền tùy chỉnh khả dụng, vui lòng cấu hình trước trong phần cài đặt")
     elif service_type == EmailServiceType.OUTLOOK:
         services = db.query(EmailServiceModel).filter(
             EmailServiceModel.service_type == "outlook",
@@ -498,7 +498,7 @@ def _build_email_service_candidates(
         ).order_by(EmailServiceModel.priority.asc(), EmailServiceModel.id.asc()).all()
 
         if not services:
-            raise ValueError("没有可用的 Outlook 账户，请先在设置中导入账户")
+            raise ValueError("Không có tài khoản Outlook khả dụng, vui lòng import tài khoản trước trong phần cài đặt")
 
         for db_service in services:
             if _is_email_service_circuit_open(db_service.id):
@@ -514,19 +514,19 @@ def _build_email_service_candidates(
             append_candidate(service_type, config, db_service=db_service)
 
         if not candidates:
-            raise ValueError("所有 Outlook 账户都已注册过，或当前均处于熔断状态")
+            raise ValueError("Tất cả tài khoản Outlook đều đã đăng ký hoặc hiện đang ở trạng thái tạm ngưng")
     elif service_type == EmailServiceType.DUCK_MAIL:
         append_database_candidates("duck_mail")
         if not candidates:
-            raise ValueError("没有可用的 DuckMail 邮箱服务，请先在邮箱服务页面添加服务")
+            raise ValueError("Không có dịch vụ email DuckMail khả dụng, vui lòng thêm dịch vụ ở trang Dịch vụ email trước")
     elif service_type == EmailServiceType.FREEMAIL:
         append_database_candidates("freemail")
         if not candidates:
-            raise ValueError("没有可用的 Freemail 邮箱服务，请先在邮箱服务页面添加服务")
+            raise ValueError("Không có dịch vụ email Freemail khả dụng, vui lòng thêm dịch vụ ở trang Dịch vụ email trước")
     elif service_type == EmailServiceType.IMAP_MAIL:
         append_database_candidates("imap_mail")
         if not candidates:
-            raise ValueError("没有可用的 IMAP 邮箱服务，请先在邮箱服务中添加")
+            raise ValueError("Không có dịch vụ email IMAP khả dụng, vui lòng thêm trong phần Dịch vụ email")
     else:
         append_candidate(service_type, email_service_config or {})
 
@@ -551,7 +551,7 @@ def _run_sync_registration_task(task_uuid: str, email_service_type: str, proxy: 
                 started_at=datetime.utcnow()
             )
             if not task:
-                logger.error(f"任务不存在: {task_uuid}")
+                logger.error(f"Không tìm thấy tác vụ: {task_uuid}")
                 return
 
             task_manager.update_status(task_uuid, "running")
@@ -1050,7 +1050,7 @@ async def run_mock_registration_task(
                 started_at=datetime.utcnow(),
             )
         if not task:
-            logger.error(f"模拟任务不存在: {task_uuid}")
+            logger.error(f"Không tìm thấy tác vụ mô phỏng: {task_uuid}")
             return
 
         task_manager.update_status(task_uuid, "running", email_service=email_service_type)
@@ -1334,7 +1334,7 @@ async def run_batch_pipeline(
                 with get_db() as db:
                     for remaining_uuid in task_uuids[i:]:
                         crud.update_registration_task(db, remaining_uuid, status="cancelled")
-                add_batch_log("[取消] 批量任务已取消")
+                add_batch_log("[Hủy] Tác vụ hàng loạt đã bị hủy")
                 update_batch_status(finished=True, status="cancelled")
                 break
 
@@ -1421,7 +1421,7 @@ async def create_mock_registration(
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail=f"无效的邮箱服务类型: {request.email_service_type}"
+            detail=f"Loại dịch vụ email không hợp lệ: {request.email_service_type}"
         )
 
     task_uuid = str(uuid.uuid4())
@@ -1477,7 +1477,7 @@ async def start_registration(
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail=f"无效的邮箱服务类型: {request.email_service_type}"
+            detail=f"Loại dịch vụ email không hợp lệ: {request.email_service_type}"
         )
 
     # 创建任务
@@ -1529,24 +1529,24 @@ async def start_batch_registration(
     """
     # 验证参数
     if request.count < 1 or request.count > 100:
-        raise HTTPException(status_code=400, detail="注册数量必须在 1-100 之间")
+        raise HTTPException(status_code=400, detail="Số lượng đăng ký phải nằm trong khoảng 1-100")
 
     try:
         EmailServiceType(request.email_service_type)
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail=f"无效的邮箱服务类型: {request.email_service_type}"
+            detail=f"Loại dịch vụ email không hợp lệ: {request.email_service_type}"
         )
 
     if request.interval_min < 0 or request.interval_max < request.interval_min:
-        raise HTTPException(status_code=400, detail="间隔时间参数无效")
+        raise HTTPException(status_code=400, detail="Tham số khoảng cách thời gian không hợp lệ")
 
     if not 1 <= request.concurrency <= 50:
-        raise HTTPException(status_code=400, detail="并发数必须在 1-50 之间")
+        raise HTTPException(status_code=400, detail="Số tiến trình đồng thời phải nằm trong khoảng 1-50")
 
     if request.mode not in ("parallel", "pipeline"):
-        raise HTTPException(status_code=400, detail="模式必须为 parallel 或 pipeline")
+        raise HTTPException(status_code=400, detail="Chế độ phải là parallel hoặc pipeline")
 
     # 创建批量任务
     batch_id = str(uuid.uuid4())
@@ -1618,10 +1618,10 @@ async def cancel_batch(batch_id: str):
     """取消批量任务"""
     batch = _require_batch_snapshot(batch_id)
     if batch.get("finished"):
-        raise HTTPException(status_code=400, detail="批量任务已完成")
+        raise HTTPException(status_code=400, detail="Tác vụ hàng loạt đã hoàn tất")
 
     task_manager.cancel_batch(batch_id)
-    return {"success": True, "message": "批量任务取消请求已提交"}
+    return {"success": True, "message": "Yêu cầu hủy tác vụ hàng loạt đã được gửi"}
 
 
 @router.get("/tasks", response_model=TaskListResponse)
@@ -1653,7 +1653,7 @@ async def get_task(task_uuid: str):
     with get_db() as db:
         task = crud.get_registration_task(db, task_uuid)
         if not task:
-            raise HTTPException(status_code=404, detail="任务不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ")
         return task_to_response(task)
 
 
@@ -1663,7 +1663,7 @@ async def get_task_logs(task_uuid: str):
     with get_db() as db:
         task = crud.get_registration_task(db, task_uuid)
         if not task:
-            raise HTTPException(status_code=404, detail="任务不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ")
 
         logs = task.logs or ""
         return {
@@ -1679,14 +1679,14 @@ async def cancel_task(task_uuid: str):
     with get_db() as db:
         task = crud.get_registration_task(db, task_uuid)
         if not task:
-            raise HTTPException(status_code=404, detail="任务不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ")
 
         if task.status not in ["pending", "running"]:
-            raise HTTPException(status_code=400, detail="任务已完成或已取消")
+            raise HTTPException(status_code=400, detail="Tác vụ đã hoàn tất hoặc đã bị hủy")
 
         task = crud.update_registration_task(db, task_uuid, status="cancelled")
 
-        return {"success": True, "message": "任务已取消"}
+        return {"success": True, "message": "Tác vụ đã bị hủy"}
 
 
 @router.delete("/tasks/{task_uuid}")
@@ -1695,14 +1695,14 @@ async def delete_task(task_uuid: str):
     with get_db() as db:
         task = crud.get_registration_task(db, task_uuid)
         if not task:
-            raise HTTPException(status_code=404, detail="任务不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ")
 
         if task.status == "running":
-            raise HTTPException(status_code=400, detail="无法删除运行中的任务")
+            raise HTTPException(status_code=400, detail="Không thể xóa tác vụ đang chạy")
 
         crud.delete_registration_task(db, task_uuid)
 
-        return {"success": True, "message": "任务已删除"}
+        return {"success": True, "message": "Tác vụ đã được xóa"}
 
 
 @router.get("/stats")
@@ -2053,16 +2053,16 @@ async def start_outlook_batch_registration(
 
     # 验证参数
     if not request.service_ids:
-        raise HTTPException(status_code=400, detail="请选择至少一个 Outlook 账户")
+        raise HTTPException(status_code=400, detail="Vui lòng chọn ít nhất một tài khoản Outlook")
 
     if request.interval_min < 0 or request.interval_max < request.interval_min:
-        raise HTTPException(status_code=400, detail="间隔时间参数无效")
+        raise HTTPException(status_code=400, detail="Tham số khoảng cách thời gian không hợp lệ")
 
     if not 1 <= request.concurrency <= 50:
-        raise HTTPException(status_code=400, detail="并发数必须在 1-50 之间")
+        raise HTTPException(status_code=400, detail="Số tiến trình đồng thời phải nằm trong khoảng 1-50")
 
     if request.mode not in ("parallel", "pipeline"):
-        raise HTTPException(status_code=400, detail="模式必须为 parallel 或 pipeline")
+        raise HTTPException(status_code=400, detail="Chế độ phải là parallel hoặc pipeline")
 
     # 过滤掉已注册的邮箱
     actual_service_ids = request.service_ids
@@ -2167,8 +2167,8 @@ async def cancel_outlook_batch(batch_id: str):
     """取消 Outlook 批量任务"""
     batch = _require_batch_snapshot(batch_id)
     if batch.get("finished"):
-        raise HTTPException(status_code=400, detail="批量任务已完成")
+        raise HTTPException(status_code=400, detail="Tác vụ hàng loạt đã hoàn tất")
 
     task_manager.cancel_batch(batch_id)
 
-    return {"success": True, "message": "批量任务取消请求已提交"}
+    return {"success": True, "message": "Yêu cầu hủy tác vụ hàng loạt đã được gửi"}

@@ -101,7 +101,7 @@ async def get_sub2api_service(service_id: int):
     with get_db() as db:
         svc = crud.get_sub2api_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Sub2API 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Sub2API không tồn tại")
         return _to_response(svc)
 
 
@@ -111,7 +111,7 @@ async def get_sub2api_service_full(service_id: int):
     with get_db() as db:
         svc = crud.get_sub2api_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Sub2API 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Sub2API không tồn tại")
         return {
             "id": svc.id,
             "name": svc.name,
@@ -128,7 +128,7 @@ async def update_sub2api_service(service_id: int, request: Sub2ApiServiceUpdate)
     with get_db() as db:
         svc = crud.get_sub2api_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Sub2API 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Sub2API không tồn tại")
 
         update_data = {}
         if request.name is not None:
@@ -153,9 +153,9 @@ async def delete_sub2api_service(service_id: int):
     with get_db() as db:
         svc = crud.get_sub2api_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Sub2API 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Sub2API không tồn tại")
         crud.delete_sub2api_service(db, service_id)
-        return {"success": True, "message": f"Sub2API 服务 {svc.name} 已删除"}
+        return {"success": True, "message": f"Dịch vụ Sub2API {svc.name} đã được xóa"}
 
 
 @router.post("/{service_id}/test")
@@ -164,7 +164,7 @@ async def test_sub2api_service(service_id: int):
     with get_db() as db:
         svc = crud.get_sub2api_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Sub2API 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Sub2API không tồn tại")
         success, message = test_sub2api_connection(svc.api_url, svc.api_key)
         return {"success": success, "message": message}
 
@@ -173,7 +173,7 @@ async def test_sub2api_service(service_id: int):
 async def test_sub2api_connection_direct(request: Sub2ApiTestRequest):
     """直接测试 Sub2API 连接（用于添加前验证）"""
     if not request.api_url or not request.api_key:
-        raise HTTPException(status_code=400, detail="api_url 和 api_key 不能为空")
+        raise HTTPException(status_code=400, detail="api_url và api_key không được để trống")
     success, message = test_sub2api_connection(request.api_url, request.api_key)
     return {"success": success, "message": message}
 
@@ -182,7 +182,7 @@ async def test_sub2api_connection_direct(request: Sub2ApiTestRequest):
 async def upload_accounts_to_sub2api(request: Sub2ApiUploadRequest):
     """批量上传账号到 Sub2API 平台"""
     if not request.account_ids:
-        raise HTTPException(status_code=400, detail="账号 ID 列表不能为空")
+        raise HTTPException(status_code=400, detail="Danh sách ID tài khoản không được để trống")
 
     with get_db() as db:
         if request.service_id:
@@ -192,7 +192,7 @@ async def upload_accounts_to_sub2api(request: Sub2ApiUploadRequest):
             svc = svcs[0] if svcs else None
 
         if not svc:
-            raise HTTPException(status_code=400, detail="未找到可用的 Sub2API 服务")
+            raise HTTPException(status_code=400, detail="Không tìm thấy dịch vụ Sub2API khả dụng")
 
         api_url = svc.api_url
         api_key = svc.api_key

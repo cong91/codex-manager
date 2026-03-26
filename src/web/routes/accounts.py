@@ -72,7 +72,7 @@ def _ensure_codex_auth_export_ready(accounts: List[Account]) -> None:
     raise HTTPException(
         status_code=400,
         detail=(
-            "以下账号尚未生成 Codex Auth，请先在账号管理中点击「Codex Auth 登录」后再导出："
+            "Các tài khoản sau chưa tạo Codex Auth. Vui lòng vào phần quản lý tài khoản, nhấn \"Đăng nhập Codex Auth\" rồi mới xuất:"
             f"{missing_summary}"
         ),
     )
@@ -87,7 +87,7 @@ def _persist_codex_auth_result(
 ) -> None:
     account = crud.get_account_by_id(db, account_id)
     if not account:
-        raise ValueError(f"账号不存在: {account_id}")
+        raise ValueError(f"Không tìm thấy tài khoản: {account_id}")
 
     tokens = auth_json.get("tokens") or {}
     openai_account_id = str(tokens.get("account_id") or "").strip()
@@ -299,7 +299,7 @@ async def get_account(account_id: int):
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
         return account_to_response(account)
 
 
@@ -309,7 +309,7 @@ async def get_account_tokens(account_id: int):
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         return {
             "id": account.id,
@@ -327,12 +327,12 @@ async def update_account(account_id: int, request: AccountUpdateRequest):
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         update_data = {}
         if request.status:
             if request.status not in [e.value for e in AccountStatus]:
-                raise HTTPException(status_code=400, detail="无效的状态值")
+                raise HTTPException(status_code=400, detail="Giá trị trạng thái không hợp lệ")
             update_data["status"] = request.status
 
         if request.metadata:
@@ -354,7 +354,7 @@ async def get_account_cookies(account_id: int):
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
         return {"account_id": account_id, "cookies": account.cookies or ""}
 
 
@@ -364,10 +364,10 @@ async def delete_account(account_id: int):
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         crud.delete_account(db, account_id)
-        return {"success": True, "message": f"账号 {account.email} 已删除"}
+        return {"success": True, "message": f"Tài khoản {account.email} đã được xóa"}
 
 
 @router.post("/batch-delete")
@@ -401,7 +401,7 @@ async def batch_delete_accounts(request: BatchDeleteRequest):
 async def batch_update_accounts(request: BatchUpdateRequest):
     """批量更新账号状态"""
     if request.status not in [e.value for e in AccountStatus]:
-        raise HTTPException(status_code=400, detail="无效的状态值")
+        raise HTTPException(status_code=400, detail="Giá trị trạng thái không hợp lệ")
 
     with get_db() as db:
         updated_count = 0
@@ -646,7 +646,7 @@ async def export_accounts_codex_auth(request: BatchExportRequest):
         )
         accounts = db.query(Account).filter(Account.id.in_(ids)).all()
         if not accounts:
-            raise HTTPException(status_code=400, detail="没有可导出的账号")
+            raise HTTPException(status_code=400, detail="Không có tài khoản nào để xuất")
 
         _ensure_codex_auth_export_ready(accounts)
 
@@ -701,12 +701,12 @@ def _build_email_service_for_account(db, account: Account):
 
     email_service_type = account.email_service
     if not email_service_type:
-        raise ValueError(f"账号 {account.email} 没有关联的邮箱服务类型")
+        raise ValueError(f"Tài khoản {account.email} không có loại dịch vụ email liên kết")
 
     try:
         service_type = EmailServiceType(email_service_type)
     except ValueError:
-        raise ValueError(f"不支持的邮箱服务类型: {email_service_type}")
+        raise ValueError(f"Loại dịch vụ email không được hỗ trợ: {email_service_type}")
 
     config = _build_inbox_config(db, service_type, account.email)
     if config is None:
@@ -736,10 +736,10 @@ async def codex_auth_login(request: CodexAuthLoginRequest):
     with get_db() as db:
         account = db.query(Account).filter(Account.id == request.account_id).first()
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         if not account.password:
-            raise HTTPException(status_code=400, detail=f"账号 {account.email} 没有密码，无法登录")
+            raise HTTPException(status_code=400, detail=f"Tài khoản {account.email} không có mật khẩu nên không thể đăng nhập")
 
         # 提取需要的数据（避免跨线程 session 问题）
         email = account.email
@@ -871,7 +871,7 @@ async def codex_auth_login_batch(request: CodexAuthBatchRequest):
             })
 
     if not accounts_data:
-        raise HTTPException(status_code=400, detail="没有符合条件的账号（需要有密码）")
+        raise HTTPException(status_code=400, detail="Không có tài khoản nào phù hợp (cần có mật khẩu)")
 
     log_queue = queue.Queue()
 
@@ -1043,7 +1043,7 @@ class BatchValidateRequest(BaseModel):
 
 @router.post("/batch-refresh")
 async def batch_refresh_tokens(request: BatchRefreshRequest, background_tasks: BackgroundTasks):
-    """批量刷新账号 Token"""
+    """批量刷新Tài khoản Token"""
     proxy = _get_proxy(request.proxy)
 
     results = {
@@ -1082,7 +1082,7 @@ async def refresh_account_token(account_id: int, request: Optional[TokenRefreshR
     if result.success:
         return {
             "success": True,
-            "message": "Token 刷新成功",
+            "message": "Làm mới token thành công",
             "expires_at": result.expires_at.isoformat() if result.expires_at else None
         }
     else:
@@ -1094,7 +1094,7 @@ async def refresh_account_token(account_id: int, request: Optional[TokenRefreshR
 
 @router.post("/batch-validate")
 async def batch_validate_tokens(request: BatchValidateRequest):
-    """批量验证账号 Token 有效性"""
+    """批量验证Tài khoản Token 有效性"""
     proxy = _get_proxy(request.proxy)
 
     results = {
@@ -1178,7 +1178,7 @@ async def batch_upload_accounts_to_cpa(request: BatchCPAUploadRequest):
         with get_db() as db:
             svc = crud.get_cpa_service_by_id(db, request.cpa_service_id)
             if not svc:
-                raise HTTPException(status_code=404, detail="指定的 CPA 服务不存在")
+                raise HTTPException(status_code=404, detail="Dịch vụ CPA được chỉ định không tồn tại")
             cpa_api_url = svc.api_url
             cpa_api_token = svc.api_token
             include_proxy_url = bool(svc.include_proxy_url)
@@ -1214,7 +1214,7 @@ async def upload_account_to_cpa(account_id: int, request: Optional[CPAUploadRequ
         with get_db() as db:
             svc = crud.get_cpa_service_by_id(db, cpa_service_id)
             if not svc:
-                raise HTTPException(status_code=404, detail="指定的 CPA 服务不存在")
+                raise HTTPException(status_code=404, detail="Dịch vụ CPA được chỉ định không tồn tại")
             cpa_api_url = svc.api_url
             cpa_api_token = svc.api_token
             include_proxy_url = bool(svc.include_proxy_url)
@@ -1222,12 +1222,12 @@ async def upload_account_to_cpa(account_id: int, request: Optional[CPAUploadRequ
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         if not account.access_token:
             return {
                 "success": False,
-                "error": "账号缺少 Token，无法上传"
+                "error": "Tài khoản thiếu token, không thể tải lên"
             }
 
         # 生成 Token JSON
@@ -1250,7 +1250,7 @@ async def upload_account_to_cpa(account_id: int, request: Optional[CPAUploadRequ
 
 
 class Sub2ApiUploadRequest(BaseModel):
-    """单账号 Sub2API 上传请求"""
+    """单Tài khoản Sub2API 上传请求"""
     service_id: Optional[int] = None
     concurrency: int = 3
     priority: int = 50
@@ -1279,7 +1279,7 @@ async def batch_upload_accounts_to_sub2api(request: BatchSub2ApiUploadRequest):
         with get_db() as db:
             svc = crud.get_sub2api_service_by_id(db, request.service_id)
             if not svc:
-                raise HTTPException(status_code=404, detail="指定的 Sub2API 服务不存在")
+                raise HTTPException(status_code=404, detail="Dịch vụ Sub2API được chỉ định không tồn tại")
             api_url = svc.api_url
             api_key = svc.api_key
     else:
@@ -1290,7 +1290,7 @@ async def batch_upload_accounts_to_sub2api(request: BatchSub2ApiUploadRequest):
                 api_key = svcs[0].api_key
 
     if not api_url or not api_key:
-        raise HTTPException(status_code=400, detail="未找到可用的 Sub2API 服务，请先在设置中配置")
+        raise HTTPException(status_code=400, detail="Không tìm thấy dịch vụ Sub2API khả dụng, vui lòng cấu hình trước trong phần cài đặt")
 
     with get_db() as db:
         ids = resolve_account_ids(
@@ -1320,7 +1320,7 @@ async def upload_account_to_sub2api(account_id: int, request: Optional[Sub2ApiUp
         with get_db() as db:
             svc = crud.get_sub2api_service_by_id(db, service_id)
             if not svc:
-                raise HTTPException(status_code=404, detail="指定的 Sub2API 服务不存在")
+                raise HTTPException(status_code=404, detail="Dịch vụ Sub2API được chỉ định không tồn tại")
             api_url = svc.api_url
             api_key = svc.api_key
     else:
@@ -1331,14 +1331,14 @@ async def upload_account_to_sub2api(account_id: int, request: Optional[Sub2ApiUp
                 api_key = svcs[0].api_key
 
     if not api_url or not api_key:
-        raise HTTPException(status_code=400, detail="未找到可用的 Sub2API 服务，请先在设置中配置")
+        raise HTTPException(status_code=400, detail="Không tìm thấy dịch vụ Sub2API khả dụng, vui lòng cấu hình trước trong phần cài đặt")
 
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
         if not account.access_token:
-            return {"success": False, "error": "账号缺少 Token，无法上传"}
+            return {"success": False, "error": "Tài khoản thiếu token, không thể tải lên"}
 
         success, message = upload_to_sub2api(
             [account], api_url, api_key,
@@ -1377,7 +1377,7 @@ async def batch_upload_accounts_to_tm(request: BatchUploadTMRequest):
             svc = svcs[0] if svcs else None
 
         if not svc:
-            raise HTTPException(status_code=400, detail="未找到可用的 Team Manager 服务，请先在设置中配置")
+            raise HTTPException(status_code=400, detail="Không tìm thấy dịch vụ Team Manager khả dụng, vui lòng cấu hình trước trong phần cài đặt")
 
         api_url = svc.api_url
         api_key = svc.api_key
@@ -1405,14 +1405,14 @@ async def upload_account_to_tm(account_id: int, request: Optional[UploadTMReques
             svc = svcs[0] if svcs else None
 
         if not svc:
-            raise HTTPException(status_code=400, detail="未找到可用的 Team Manager 服务，请先在设置中配置")
+            raise HTTPException(status_code=400, detail="Không tìm thấy dịch vụ Team Manager khả dụng, vui lòng cấu hình trước trong phần cài đặt")
 
         api_url = svc.api_url
         api_key = svc.api_key
 
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
         success, message = upload_to_team_manager(account, api_url, api_key)
 
     return {"success": success, "message": message}
@@ -1443,7 +1443,7 @@ async def batch_upload_accounts_to_newapi(request: BatchUploadNewapiRequest):
             svc = svcs[0] if svcs else None
 
         if not svc:
-            raise HTTPException(status_code=400, detail="未找到可用的 NEWAPI 服务，请先在设置中配置")
+            raise HTTPException(status_code=400, detail="Không tìm thấy dịch vụ NEWAPI khả dụng, vui lòng cấu hình trước trong phần cài đặt")
 
         api_url = svc.api_url
         api_key = svc.api_key
@@ -1476,11 +1476,11 @@ async def upload_account_to_newapi(account_id: int, request: Optional[UploadNewa
             svc = svcs[0] if svcs else None
 
         if not svc:
-            raise HTTPException(status_code=400, detail="未找到可用的 NEWAPI 服务，请先在设置中配置")
+            raise HTTPException(status_code=400, detail="Không tìm thấy dịch vụ NEWAPI khả dụng, vui lòng cấu hình trước trong phần cài đặt")
 
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
         success, message = upload_to_newapi(
             account,
             svc.api_url,
@@ -1551,7 +1551,7 @@ def _build_inbox_config(db, service_type, email: str) -> dict:
         EmailServiceModel.enabled == True
     )
     if service_type == EST.OUTLOOK:
-        # 按 config.email 匹配账号 email
+        # 按 config.email 匹配Tài khoản email
         services = query.all()
         svc = next((s for s in services if (s.config or {}).get("email") == email), None)
     else:
@@ -1573,16 +1573,16 @@ async def get_account_inbox_code(account_id: int):
     with get_db() as db:
         account = crud.get_account_by_id(db, account_id)
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         try:
             service_type = EmailServiceType(account.email_service)
         except ValueError:
-            return {"success": False, "error": "不支持的邮箱服务类型"}
+            return {"success": False, "error": "Loại dịch vụ email không được hỗ trợ"}
 
         config = _build_inbox_config(db, service_type, account.email)
         if config is None:
-            return {"success": False, "error": "未找到可用的邮箱服务配置"}
+            return {"success": False, "error": "Không tìm thấy cấu hình dịch vụ email khả dụng"}
 
         try:
             svc = EmailServiceFactory.create(service_type, config)
@@ -1595,6 +1595,6 @@ async def get_account_inbox_code(account_id: int):
             return {"success": False, "error": str(e)}
 
         if not code:
-            return {"success": False, "error": "未收到验证码邮件"}
+            return {"success": False, "error": "Chưa nhận được email chứa mã xác minh"}
 
         return {"success": True, "code": code, "email": account.email}

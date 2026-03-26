@@ -22,7 +22,7 @@ async function loadAccounts() {
         const resp = await fetch('/api/accounts?page=1&page_size=100&status=active');
         const data = await resp.json();
         const sel = document.getElementById('account-select');
-        sel.innerHTML = '<option value="">-- 请选择账号 --</option>';
+        sel.innerHTML = '<option value="">-- Vui lòng chọn tài khoản --</option>';
         (data.accounts || []).forEach(acc => {
             const opt = document.createElement('option');
             opt.value = acc.id;
@@ -30,7 +30,7 @@ async function loadAccounts() {
             sel.appendChild(opt);
         });
     } catch (e) {
-        console.error('加载账号失败:', e);
+        console.error('Tải tài khoản thất bại:', e);
     }
 }
 
@@ -52,11 +52,11 @@ function selectPlan(plan) {
     generatedLink = '';
 }
 
-// 生成支付链接
+// Tạo liên kết thanh toán
 async function generateLink() {
     const accountId = document.getElementById('account-select').value;
     if (!accountId) {
-        ui.showToast('请先选择账号', 'warning');
+        toast.warning('Vui lòng chọn tài khoản trước');
         return;
     }
 
@@ -75,7 +75,7 @@ async function generateLink() {
     }
 
     const btn = document.querySelector('.form-actions .btn-primary');
-    if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Đang tạo...'; }
 
     try {
         const resp = await fetch('/api/payment/generate-link', {
@@ -89,14 +89,14 @@ async function generateLink() {
             document.getElementById('link-text').value = data.link;
             document.getElementById('link-box').classList.add('show');
             document.getElementById('open-status').textContent = '';
-            ui.showToast('支付链接生成成功', 'success');
+            toast.success('Tạo liên kết thanh toán thành công');
         } else {
-            ui.showToast(data.detail || '生成链接失败', 'error');
+            toast.error(data.detail || 'Tạo liên kết thất bại');
         }
     } catch (e) {
-        ui.showToast('请求失败: ' + e.message, 'error');
+        toast.error('Yêu cầu thất bại: ' + e.message);
     } finally {
-        if (btn) { btn.disabled = false; btn.textContent = '生成支付链接'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Tạo liên kết thanh toán'; }
     }
 }
 
@@ -104,24 +104,24 @@ async function generateLink() {
 function copyLink() {
     if (!generatedLink) return;
     navigator.clipboard.writeText(generatedLink).then(() => {
-        ui.showToast('已复制到剪贴板', 'success');
+        toast.success('Đã sao chép vào khay nhớ tạm');
     }).catch(() => {
         const ta = document.getElementById('link-text');
         ta.select();
         document.execCommand('copy');
-        ui.showToast('已复制到剪贴板', 'success');
+        toast.success('Đã sao chép vào khay nhớ tạm');
     });
 }
 
 // 无痕打开浏览器（携带账号 cookie）
 async function openIncognito() {
     if (!generatedLink) {
-        ui.showToast('请先生成链接', 'warning');
+        toast.warning('Vui lòng tạo liên kết trước');
         return;
     }
     const accountId = document.getElementById('account-select').value;
     const statusEl = document.getElementById('open-status');
-    statusEl.textContent = '正在打开...';
+    statusEl.textContent = 'Đang mở...';
     try {
         const body = { url: generatedLink };
         if (accountId) body.account_id = parseInt(accountId);
@@ -133,14 +133,14 @@ async function openIncognito() {
         });
         const data = await resp.json();
         if (data.success) {
-            statusEl.textContent = '已在无痕模式打开浏览器';
-            ui.showToast('无痕浏览器已打开', 'success');
+            statusEl.textContent = 'Đã mở trình duyệt ở chế độ ẩn danh';
+            toast.success('Trình duyệt ẩn danh đã được mở');
         } else {
-            statusEl.textContent = data.message || '未找到可用浏览器，请手动复制链接';
-            ui.showToast(data.message || '未找到浏览器', 'warning');
+            statusEl.textContent = data.message || 'Không tìm thấy trình duyệt khả dụng, vui lòng sao chép liên kết thủ công';
+            toast.warning(data.message || 'Không tìm thấy trình duyệt');
         }
     } catch (e) {
-        statusEl.textContent = '请求失败: ' + e.message;
-        ui.showToast('请求失败', 'error');
+        statusEl.textContent = 'Yêu cầu thất bại: ' + e.message;
+        toast.error('Yêu cầu thất bại');
     }
 }

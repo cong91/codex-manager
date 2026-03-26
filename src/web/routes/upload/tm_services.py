@@ -94,7 +94,7 @@ async def get_tm_service(service_id: int):
     with get_db() as db:
         svc = crud.get_tm_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Team Manager 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Team Manager không tồn tại")
         return _to_response(svc)
 
 
@@ -104,7 +104,7 @@ async def update_tm_service(service_id: int, request: TmServiceUpdate):
     with get_db() as db:
         svc = crud.get_tm_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Team Manager 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Team Manager không tồn tại")
 
         update_data = {}
         if request.name is not None:
@@ -128,9 +128,9 @@ async def delete_tm_service(service_id: int):
     with get_db() as db:
         svc = crud.get_tm_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Team Manager 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Team Manager không tồn tại")
         crud.delete_tm_service(db, service_id)
-        return {"success": True, "message": f"Team Manager 服务 {svc.name} 已删除"}
+        return {"success": True, "message": f"Dịch vụ Team Manager {svc.name} đã được xóa"}
 
 
 @router.post("/{service_id}/test")
@@ -139,7 +139,7 @@ async def test_tm_service(service_id: int):
     with get_db() as db:
         svc = crud.get_tm_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="Team Manager 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ Team Manager không tồn tại")
         success, message = test_team_manager_connection(svc.api_url, svc.api_key)
         return {"success": success, "message": message}
 
@@ -148,6 +148,6 @@ async def test_tm_service(service_id: int):
 async def test_tm_connection_direct(request: TmTestRequest):
     """直接测试 Team Manager 连接（用于添加前验证）"""
     if not request.api_url or not request.api_key:
-        raise HTTPException(status_code=400, detail="api_url 和 api_key 不能为空")
+        raise HTTPException(status_code=400, detail="api_url và api_key không được để trống")
     success, message = test_team_manager_connection(request.api_url, request.api_key)
     return {"success": success, "message": message}

@@ -96,7 +96,7 @@ async def get_newapi_service(service_id: int):
     with get_db() as db:
         svc = crud.get_newapi_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="NEWAPI 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ NEWAPI không tồn tại")
         return _to_response(svc)
 
 
@@ -105,7 +105,7 @@ async def update_newapi_service(service_id: int, request: NewapiServiceUpdate):
     with get_db() as db:
         svc = crud.get_newapi_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="NEWAPI 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ NEWAPI không tồn tại")
 
         update_data = {}
         if request.name is not None:
@@ -134,6 +134,6 @@ async def delete_newapi_service(service_id: int):
     with get_db() as db:
         svc = crud.get_newapi_service_by_id(db, service_id)
         if not svc:
-            raise HTTPException(status_code=404, detail="NEWAPI 服务不存在")
+            raise HTTPException(status_code=404, detail="Dịch vụ NEWAPI không tồn tại")
         crud.delete_newapi_service(db, service_id)
-        return {"success": True, "message": f"NEWAPI 服务 {svc.name} 已删除"}
+        return {"success": True, "message": f"Dịch vụ NEWAPI {svc.name} đã được xóa"}

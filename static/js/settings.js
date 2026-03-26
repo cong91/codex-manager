@@ -179,7 +179,7 @@ function initEventListeners() {
         elements.toggleImportBtn.addEventListener('click', () => {
             const isHidden = elements.outlookImportBody.style.display === 'none';
             elements.outlookImportBody.style.display = isHidden ? 'block' : 'none';
-            elements.toggleImportBtn.textContent = isHidden ? '收起' : '展开';
+            elements.toggleImportBtn.textContent = isHidden ? 'Thu gọn' : 'Mở rộng';
         });
     }
 
@@ -371,13 +371,13 @@ async function loadSettings() {
             const input = document.getElementById('webui-access-password');
             if (input) {
                 input.value = '';
-                input.placeholder = '已配置，留空保持不变';
+                input.placeholder = 'Đã cấu hình, để trống để giữ nguyên';
             }
         }
 
     } catch (error) {
-        console.error('加载设置失败:', error);
-        toast.error('加载设置失败');
+        console.error('Tải cài đặt thất bại:', error);
+        toast.error('Tải cài đặt thất bại');
     }
 }
 
@@ -392,11 +392,11 @@ async function handleSaveWebuiSettings(e) {
 
     try {
         await api.post('/settings/webui', payload);
-        toast.success('Web UI 设置已更新');
+        toast.success('Đã cập nhật cài đặt Web UI');
         document.getElementById('webui-access-password').value = '';
     } catch (error) {
-        console.error('保存 Web UI 设置失败:', error);
-        toast.error('保存 Web UI 设置失败');
+        console.error('Lưu cài đặt Web UI thất bại:', error);
+        toast.error('Lưu cài đặt Web UI thất bại');
     }
 }
 
@@ -409,14 +409,14 @@ async function loadEmailServices() {
         const data = await api.get('/email-services');
         renderEmailServices(data.services);
     } catch (error) {
-        console.error('加载邮箱服务失败:', error);
+        console.error('Tải dịch vụ email thất bại:', error);
         if (elements.emailServicesTable) {
             elements.emailServicesTable.innerHTML = `
                 <tr>
                     <td colspan="7">
                         <div class="empty-state">
                             <div class="empty-state-icon">❌</div>
-                            <div class="empty-state-title">加载失败</div>
+                            <div class="empty-state-title">Tải thất bại</div>
                         </div>
                     </td>
                 </tr>
@@ -436,8 +436,8 @@ function renderEmailServices(services) {
                 <td colspan="7">
                     <div class="empty-state">
                         <div class="empty-state-icon">📭</div>
-                        <div class="empty-state-title">暂无配置</div>
-                        <div class="empty-state-description">点击上方"添加服务"按钮添加邮箱服务</div>
+                        <div class="empty-state-title">Chưa có cấu hình</div>
+                        <div class="empty-state-description">Nhấn nút "Thêm dịch vụ" phía trên để thêm dịch vụ email</div>
                     </div>
                 </td>
             </tr>
@@ -453,18 +453,18 @@ function renderEmailServices(services) {
             </td>
             <td>${escapeHtml(service.name)}</td>
             <td>${getServiceTypeText(service.service_type)}</td>
-            <td title="${service.enabled ? '已启用' : '已禁用'}">${service.enabled ? '✅' : '⭕'}</td>
+            <td title="${service.enabled ? 'Đã bật' : 'Đã tắt'}">${service.enabled ? '✅' : '⭕'}</td>
             <td>${service.priority}</td>
             <td>${format.date(service.last_used)}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn btn-ghost btn-sm" onclick="testService(${service.id})" title="测试">
+                    <button class="btn btn-ghost btn-sm" onclick="testService(${service.id})" title="Kiểm tra">
                         🔌
                     </button>
-                    <button class="btn btn-ghost btn-sm" onclick="toggleService(${service.id}, ${!service.enabled})" title="${service.enabled ? '禁用' : '启用'}">
+                    <button class="btn btn-ghost btn-sm" onclick="toggleService(${service.id}, ${!service.enabled})" title="${service.enabled ? 'Tắt' : 'Bật'}">
                         ${service.enabled ? '🔒' : '🔓'}
                     </button>
-                    <button class="btn btn-ghost btn-sm" onclick="deleteService(${service.id})" title="删除">
+                    <button class="btn btn-ghost btn-sm" onclick="deleteService(${service.id})" title="Xóa">
                         🗑️
                     </button>
                 </div>
@@ -484,7 +484,7 @@ async function loadDatabaseInfo() {
         document.getElementById('db-tasks').textContent = format.number(data.tasks_count);
 
     } catch (error) {
-        console.error('加载数据库信息失败:', error);
+        console.error('Tải thông tin cơ sở dữ liệu thất bại:', error);
     }
 }
 
@@ -502,9 +502,9 @@ async function handleSaveRegistration(e) {
 
     try {
         await api.post('/settings/registration', data);
-        toast.success('注册配置已保存');
+        toast.success('Đã lưu cấu hình đăng ký');
     } catch (error) {
-        toast.error('保存失败: ' + error.message);
+        toast.error('Lưu thất bại: ' + error.message);
     }
 }
 
@@ -517,11 +517,11 @@ async function handleSaveEmailCode(e) {
 
     // 客户端验证
     if (timeout < 30 || timeout > 600) {
-        toast.error('等待超时必须在 30-600 秒之间');
+        toast.error('Thời gian chờ phải nằm trong khoảng 30-600 giây');
         return;
     }
     if (pollInterval < 1 || pollInterval > 30) {
-        toast.error('轮询间隔必须在 1-30 秒之间');
+        toast.error('Khoảng thời gian thăm dò phải nằm trong khoảng 1-30 giây');
         return;
     }
 
@@ -532,45 +532,45 @@ async function handleSaveEmailCode(e) {
 
     try {
         await api.post('/settings/email-code', data);
-        toast.success('验证码配置已保存');
+        toast.success('Đã lưu cấu hình mã xác minh');
     } catch (error) {
-        toast.error('保存失败: ' + error.message);
+        toast.error('Lưu thất bại: ' + error.message);
     }
 }
 
 // 备份数据库
 async function handleBackup() {
     elements.backupBtn.disabled = true;
-    elements.backupBtn.innerHTML = '<span class="loading-spinner"></span> 备份中...';
+    elements.backupBtn.innerHTML = '<span class="loading-spinner"></span> Đang sao lưu...';
 
     try {
         const data = await api.post('/settings/database/backup');
-        toast.success(`备份成功: ${data.backup_path}`);
+        toast.success(`Sao lưu thành công: ${data.backup_path}`);
     } catch (error) {
-        toast.error('备份失败: ' + error.message);
+        toast.error('Sao lưu thất bại: ' + error.message);
     } finally {
         elements.backupBtn.disabled = false;
-        elements.backupBtn.textContent = '💾 备份数据库';
+        elements.backupBtn.textContent = '💾 Sao lưu cơ sở dữ liệu';
     }
 }
 
 // 清理数据
 async function handleCleanup() {
-    const confirmed = await confirm('确定要清理过期数据吗？此操作不可恢复。');
+    const confirmed = await confirm('Bạn có chắc muốn dọn dẹp dữ liệu hết hạn không? Thao tác này không thể hoàn tác.');
     if (!confirmed) return;
 
     elements.cleanupBtn.disabled = true;
-    elements.cleanupBtn.innerHTML = '<span class="loading-spinner"></span> 清理中...';
+    elements.cleanupBtn.innerHTML = '<span class="loading-spinner"></span> Đang dọn dẹp...';
 
     try {
         const data = await api.post('/settings/database/cleanup?days=30');
         toast.success(data.message);
         loadDatabaseInfo();
     } catch (error) {
-        toast.error('清理失败: ' + error.message);
+        toast.error('Dọn dẹp thất bại: ' + error.message);
     } finally {
         elements.cleanupBtn.disabled = false;
-        elements.cleanupBtn.textContent = '🧹 清理过期数据';
+        elements.cleanupBtn.textContent = '🧹 Dọn dẹp dữ liệu hết hạn';
     }
 }
 
@@ -598,7 +598,7 @@ async function loadServiceConfigFields(serviceType) {
         `).join('');
 
     } catch (error) {
-        console.error('加载配置字段失败:', error);
+        console.error('Tải trường cấu hình thất bại:', error);
     }
 }
 
@@ -623,26 +623,26 @@ async function handleAddService(e) {
 
     try {
         await api.post('/email-services', data);
-        toast.success('邮箱服务已添加');
+        toast.success('Đã thêm dịch vụ email');
         elements.addServiceModal.classList.remove('active');
         elements.addServiceForm.reset();
         loadEmailServices();
     } catch (error) {
-        toast.error('添加失败: ' + error.message);
+        toast.error('Thêm thất bại: ' + error.message);
     }
 }
 
-// 测试服务
+// Kiểm tra服务
 async function testService(id) {
     try {
         const data = await api.post(`/email-services/${id}/test`);
         if (data.success) {
-            toast.success('服务连接正常');
+            toast.success('Kết nối dịch vụ bình thường');
         } else {
-            toast.warning('服务连接失败: ' + data.message);
+            toast.warning('Kết nối dịch vụ thất bại: ' + data.message);
         }
     } catch (error) {
-        toast.error('测试失败: ' + error.message);
+        toast.error('Kiểm tra thất bại: ' + error.message);
     }
 }
 
@@ -651,24 +651,24 @@ async function toggleService(id, enabled) {
     try {
         const endpoint = enabled ? 'enable' : 'disable';
         await api.post(`/email-services/${id}/${endpoint}`);
-        toast.success(enabled ? '服务已启用' : '服务已禁用');
+        toast.success(enabled ? 'Dịch vụ đã được bật' : 'Dịch vụ đã được tắt');
         loadEmailServices();
     } catch (error) {
-        toast.error('操作失败: ' + error.message);
+        toast.error('Thao tác thất bại: ' + error.message);
     }
 }
 
-// 删除服务
+// Xóa服务
 async function deleteService(id) {
-    const confirmed = await confirm('确定要删除此邮箱服务配置吗？');
+    const confirmed = await confirm('Bạn có chắc muốn xóa cấu hình dịch vụ email này không?');
     if (!confirmed) return;
 
     try {
         await api.delete(`/email-services/${id}`);
-        toast.success('服务已删除');
+        toast.success('Dịch vụ đã được xóa');
         loadEmailServices();
     } catch (error) {
-        toast.error('删除失败: ' + error.message);
+        toast.error('Xóa thất bại: ' + error.message);
     }
 }
 
@@ -684,7 +684,7 @@ function updateSelectedServices() {
 async function handleOutlookBatchImport() {
     const data = elements.outlookImportData.value.trim();
     if (!data) {
-        toast.warning('请输入要导入的数据');
+        toast.warning('Vui lòng nhập dữ liệu cần nhập');
         return;
     }
 
@@ -699,7 +699,7 @@ async function handleOutlookBatchImport() {
     lines.forEach((line, index) => {
         const parts = line.split('----').map(p => p.trim());
         if (parts.length < 2) {
-            errors.push(`第 ${index + 1} 行格式错误`);
+            errors.push(`Dòng ${index + 1} sai định dạng`);
             return;
         }
 
@@ -713,7 +713,7 @@ async function handleOutlookBatchImport() {
         };
 
         if (!account.email.includes('@')) {
-            errors.push(`第 ${index + 1} 行邮箱格式错误: ${account.email}`);
+            errors.push(`Dòng ${index + 1} sai định dạng email: ${account.email}`);
             return;
         }
 
@@ -729,7 +729,7 @@ async function handleOutlookBatchImport() {
     }
 
     elements.outlookImportBtn.disabled = true;
-    elements.outlookImportBtn.innerHTML = '<span class="loading-spinner"></span> 导入中...';
+    elements.outlookImportBtn.innerHTML = '<span class="loading-spinner"></span> Đang nhập...';
 
     let successCount = 0;
     let failCount = 0;
@@ -758,19 +758,19 @@ async function handleOutlookBatchImport() {
         elements.importResult.style.display = 'block';
         elements.importResult.innerHTML = `
             <div class="import-stats">
-                <span>✅ 成功: ${successCount}</span>
-                <span>❌ 失败: ${failCount}</span>
+                <span>✅ Thành công: ${successCount}</span>
+                <span>❌ Thất bại: ${failCount}</span>
             </div>
         `;
 
-        toast.success(`导入完成，成功 ${successCount} 个`);
+        toast.success(`Nhập xong, thành công ${successCount} mục`);
         loadEmailServices();
 
     } catch (error) {
-        toast.error('导入失败: ' + error.message);
+        toast.error('Nhập thất bại: ' + error.message);
     } finally {
         elements.outlookImportBtn.disabled = false;
-        elements.outlookImportBtn.textContent = '📥 开始导入';
+        elements.outlookImportBtn.textContent = '📥 Bắt đầu nhập';
     }
 }
 
@@ -793,13 +793,13 @@ async function loadProxies() {
         const data = await api.get('/settings/proxies');
         renderProxies(data.proxies);
     } catch (error) {
-        console.error('加载代理列表失败:', error);
+        console.error('Tải danh sách proxy thất bại:', error);
         elements.proxiesTable.innerHTML = `
             <tr>
                 <td colspan="7">
                     <div class="empty-state">
                         <div class="empty-state-icon">❌</div>
-                        <div class="empty-state-title">加载失败</div>
+                        <div class="empty-state-title">Tải thất bại</div>
                     </div>
                 </td>
             </tr>
@@ -815,8 +815,8 @@ function renderProxies(proxies) {
                 <td colspan="7">
                     <div class="empty-state">
                         <div class="empty-state-icon">🌐</div>
-                        <div class="empty-state-title">暂无代理</div>
-                        <div class="empty-state-description">点击"添加代理"按钮添加代理服务器</div>
+                        <div class="empty-state-title">Chưa có proxy</div>
+                        <div class="empty-state-description">Nhấn nút "Thêm proxy" để thêm máy chủ proxy</div>
                     </div>
                 </td>
             </tr>
@@ -832,24 +832,24 @@ function renderProxies(proxies) {
             <td><code>${escapeHtml(proxy.host)}:${proxy.port}</code></td>
             <td>
                 ${proxy.is_default
-                    ? '<span class="status-badge active">默认</span>'
-                    : `<button class="btn btn-ghost btn-sm" onclick="handleSetProxyDefault(${proxy.id})" title="设为默认">设默认</button>`
+                    ? '<span class="status-badge active">Mặc định</span>'
+                    : `<button class="btn btn-ghost btn-sm" onclick="handleSetProxyDefault(${proxy.id})" title="Đặt mặc định">Đặt mặc định</button>`
                 }
             </td>
-            <td title="${proxy.enabled ? '已启用' : '已禁用'}">${proxy.enabled ? '✅' : '⭕'}</td>
+            <td title="${proxy.enabled ? 'Đã bật' : 'Đã tắt'}">${proxy.enabled ? '✅' : '⭕'}</td>
             <td>${format.date(proxy.last_used)}</td>
             <td>
                 <div style="display:flex;gap:4px;align-items:center;white-space:nowrap;">
-                    <button class="btn btn-secondary btn-sm" onclick="editProxyItem(${proxy.id})">编辑</button>
+                    <button class="btn btn-secondary btn-sm" onclick="editProxyItem(${proxy.id})">Chỉnh sửa</button>
                     <div class="dropdown" style="position:relative;">
-                        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleSettingsMoreMenu(this)">更多</button>
+                        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleSettingsMoreMenu(this)">Thêm</button>
                         <div class="dropdown-menu" style="min-width:80px;">
-                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);testProxyItem(${proxy.id})">测试</a>
-                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);toggleProxyItem(${proxy.id}, ${!proxy.enabled})">${proxy.enabled ? '禁用' : '启用'}</a>
-                            ${!proxy.is_default ? `<a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);handleSetProxyDefault(${proxy.id})">设为默认</a>` : ''}
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);testProxyItem(${proxy.id})">Kiểm tra</a>
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);toggleProxyItem(${proxy.id}, ${!proxy.enabled})">${proxy.enabled ? 'Tắt' : 'Bật'}</a>
+                            ${!proxy.is_default ? `<a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);handleSetProxyDefault(${proxy.id})">Đặt mặc định</a>` : ''}
                         </div>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteProxyItem(${proxy.id})">删除</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProxyItem(${proxy.id})">Xóa</button>
                 </div>
             </td>
         </tr>
@@ -868,20 +868,20 @@ function closeSettingsMoreMenu(el) {
     if (menu) menu.classList.remove('active');
 }
 
-// 设为默认代理
+// Đặt mặc định代理
 async function handleSetProxyDefault(id) {
     try {
         await api.post(`/settings/proxies/${id}/set-default`);
-        toast.success('已设为默认代理');
+        toast.success('Đã đặt làm proxy mặc định');
         loadProxies();
     } catch (error) {
-        toast.error('操作失败: ' + error.message);
+        toast.error('Thao tác thất bại: ' + error.message);
     }
 }
 
 // 打开代理模态框
 function openProxyModal(proxy = null) {
-    elements.proxyModalTitle.textContent = proxy ? '编辑代理' : '添加代理';
+    elements.proxyModalTitle.textContent = proxy ? 'Chỉnh sửa proxy' : 'Thêm proxy';
     elements.proxyItemForm.reset();
 
     document.getElementById('proxy-item-id').value = proxy ? proxy.id : '';
@@ -922,29 +922,29 @@ async function handleSaveProxyItem(e) {
     try {
         if (proxyId) {
             await api.patch(`/settings/proxies/${proxyId}`, data);
-            toast.success('代理已更新');
+            toast.success('Proxy đã được cập nhật');
         } else {
             await api.post('/settings/proxies', data);
-            toast.success('代理已添加');
+            toast.success('Proxy đã được thêm');
         }
         closeProxyModal();
         loadProxies();
     } catch (error) {
-        toast.error('保存失败: ' + error.message);
+        toast.error('Lưu thất bại: ' + error.message);
     }
 }
 
-// 编辑代理
+// Chỉnh sửa代理
 async function editProxyItem(id) {
     try {
         const proxy = await api.get(`/settings/proxies/${id}`);
         openProxyModal(proxy);
     } catch (error) {
-        toast.error('获取代理信息失败');
+        toast.error('Lấy thông tin proxy thất bại');
     }
 }
 
-// 测试单个代理
+// Kiểm tra单个代理
 async function testProxyItem(id) {
     try {
         const result = await api.post(`/settings/proxies/${id}/test`);
@@ -954,7 +954,7 @@ async function testProxyItem(id) {
             toast.error(result.message);
         }
     } catch (error) {
-        toast.error('测试失败: ' + error.message);
+        toast.error('Kiểm tra thất bại: ' + error.message);
     }
 }
 
@@ -963,41 +963,41 @@ async function toggleProxyItem(id, enabled) {
     try {
         const endpoint = enabled ? 'enable' : 'disable';
         await api.post(`/settings/proxies/${id}/${endpoint}`);
-        toast.success(enabled ? '代理已启用' : '代理已禁用');
+        toast.success(enabled ? 'Proxy đã được bật' : 'Proxy đã được tắt');
         loadProxies();
     } catch (error) {
-        toast.error('操作失败: ' + error.message);
+        toast.error('Thao tác thất bại: ' + error.message);
     }
 }
 
-// 删除代理
+// Xóa代理
 async function deleteProxyItem(id) {
-    const confirmed = await confirm('确定要删除此代理吗？');
+    const confirmed = await confirm('Bạn có chắc muốn xóa proxy này không?');
     if (!confirmed) return;
 
     try {
         await api.delete(`/settings/proxies/${id}`);
-        toast.success('代理已删除');
+        toast.success('Proxy đã được xóa');
         loadProxies();
     } catch (error) {
-        toast.error('删除失败: ' + error.message);
+        toast.error('Xóa thất bại: ' + error.message);
     }
 }
 
-// 测试所有代理
+// Kiểm tra所有代理
 async function handleTestAllProxies() {
     elements.testAllProxiesBtn.disabled = true;
-    elements.testAllProxiesBtn.innerHTML = '<span class="loading-spinner"></span> 测试中...';
+    elements.testAllProxiesBtn.innerHTML = '<span class="loading-spinner"></span> Đang kiểm tra...';
 
     try {
         const result = await api.post('/settings/proxies/test-all');
-        toast.info(`测试完成: 成功 ${result.success}, 失败 ${result.failed}`);
+        toast.info(`Kiểm tra xong: thành công ${result.success}, thất bại ${result.failed}`);
         loadProxies();
     } catch (error) {
-        toast.error('测试失败: ' + error.message);
+        toast.error('Kiểm tra thất bại: ' + error.message);
     } finally {
         elements.testAllProxiesBtn.disabled = false;
-        elements.testAllProxiesBtn.textContent = '🔌 测试全部';
+        elements.testAllProxiesBtn.textContent = '🔌 Kiểm tra tất cả';
     }
 }
 
@@ -1013,7 +1013,7 @@ async function loadOutlookSettings() {
         const el = document.getElementById('outlook-default-client-id');
         if (el) el.value = data.default_client_id || '';
     } catch (error) {
-        console.error('加载 Outlook 设置失败:', error);
+        console.error('Tải cài đặt Outlook thất bại:', error);
     }
 }
 
@@ -1025,9 +1025,9 @@ async function handleSaveOutlookSettings(e) {
     };
     try {
         await api.post('/settings/outlook', data);
-        toast.success('Outlook 设置已保存');
+        toast.success('Đã lưu cài đặt Outlook');
     } catch (error) {
-        toast.error('保存失败: ' + error.message);
+        toast.error('Lưu thất bại: ' + error.message);
     }
 }
 
@@ -1044,22 +1044,22 @@ async function handleSaveDynamicProxy(e) {
     };
     try {
         await api.post('/settings/proxy/dynamic', data);
-        toast.success('动态代理设置已保存');
+        toast.success('Đã lưu cài đặt proxy động');
         document.getElementById('dynamic-proxy-api-key').value = '';
     } catch (error) {
-        toast.error('保存失败: ' + error.message);
+        toast.error('Lưu thất bại: ' + error.message);
     }
 }
 
 async function handleTestDynamicProxy() {
     const apiUrl = document.getElementById('dynamic-proxy-api-url').value.trim();
     if (!apiUrl) {
-        toast.warning('请先填写动态代理 API 地址');
+        toast.warning('Vui lòng nhập địa chỉ API proxy động trước');
         return;
     }
     const btn = elements.testDynamicProxyBtn;
     btn.disabled = true;
-    btn.textContent = '测试中...';
+    btn.textContent = 'Đang kiểm tra...';
     try {
         const result = await api.post('/settings/proxy/dynamic/test', {
             api_url: apiUrl,
@@ -1073,10 +1073,10 @@ async function handleTestDynamicProxy() {
             toast.error(result.message);
         }
     } catch (error) {
-        toast.error('测试失败: ' + error.message);
+        toast.error('Kiểm tra thất bại: ' + error.message);
     } finally {
         btn.disabled = false;
-        btn.textContent = '🔌 测试动态代理';
+        btn.textContent = '🔌 Kiểm tra proxy động';
     }
 }
 
@@ -1094,19 +1094,19 @@ async function loadTmServices() {
 
 function renderTmServicesTable(services) {
     if (!services || services.length === 0) {
-        elements.tmServicesTable.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">暂无 Team Manager 服务，点击「添加服务」新增</td></tr>';
+        elements.tmServicesTable.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Chưa có dịch vụ Team Manager, nhấn "Thêm dịch vụ" để tạo mới</td></tr>';
         return;
     }
     elements.tmServicesTable.innerHTML = services.map(s => `
         <tr>
             <td>${escapeHtml(s.name)}</td>
             <td style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(s.api_url)}</td>
-            <td style="text-align:center;" title="${s.enabled ? '已启用' : '已禁用'}">${s.enabled ? '✅' : '⭕'}</td>
+            <td style="text-align:center;" title="${s.enabled ? 'Đã bật' : 'Đã tắt'}">${s.enabled ? '✅' : '⭕'}</td>
             <td style="text-align:center;">${s.priority}</td>
             <td style="white-space:nowrap;">
-                <button class="btn btn-secondary btn-sm" onclick="editTmService(${s.id})">编辑</button>
-                <button class="btn btn-secondary btn-sm" onclick="testTmServiceById(${s.id})">测试</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteTmService(${s.id}, '${escapeHtml(s.name)}')">删除</button>
+                <button class="btn btn-secondary btn-sm" onclick="editTmService(${s.id})">Chỉnh sửa</button>
+                <button class="btn btn-secondary btn-sm" onclick="testTmServiceById(${s.id})">Kiểm tra</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteTmService(${s.id}, '${escapeHtml(s.name)}')">Xóa</button>
             </td>
         </tr>
     `).join('');
@@ -1120,11 +1120,11 @@ function openTmServiceModal(service = null) {
     document.getElementById('tm-service-priority').value = service ? service.priority : 0;
     document.getElementById('tm-service-enabled').checked = service ? service.enabled : true;
     if (service) {
-        document.getElementById('tm-service-key').placeholder = service.has_key ? '已配置，留空保持不变' : '请输入 API Key';
+        document.getElementById('tm-service-key').placeholder = service.has_key ? 'Đã cấu hình, để trống để giữ nguyên' : 'Vui lòng nhập API Key';
     } else {
-        document.getElementById('tm-service-key').placeholder = '请输入 API Key';
+        document.getElementById('tm-service-key').placeholder = 'Vui lòng nhập API Key';
     }
-    elements.tmServiceModalTitle.textContent = service ? '编辑 Team Manager 服务' : '添加 Team Manager 服务';
+    elements.tmServiceModalTitle.textContent = service ? 'Chỉnh sửa dịch vụ Team Manager' : 'Thêm dịch vụ Team Manager';
     elements.tmServiceEditModal.classList.add('active');
 }
 
@@ -1137,7 +1137,7 @@ async function editTmService(id) {
         const service = await api.get(`/tm-services/${id}`);
         openTmServiceModal(service);
     } catch (e) {
-        toast.error('获取服务信息失败: ' + e.message);
+        toast.error('Lấy thông tin dịch vụ thất bại: ' + e.message);
     }
 }
 
@@ -1151,11 +1151,11 @@ async function handleSaveTmService(e) {
     const enabled = document.getElementById('tm-service-enabled').checked;
 
     if (!name || !apiUrl) {
-        toast.error('名称和 API URL 不能为空');
+        toast.error('Tên và URL API không được để trống');
         return;
     }
     if (!id && !apiKey) {
-        toast.error('新增服务时 API Key 不能为空');
+        toast.error('Khi thêm dịch vụ mới, API Key không được để trống');
         return;
     }
 
@@ -1165,28 +1165,28 @@ async function handleSaveTmService(e) {
 
         if (id) {
             await api.patch(`/tm-services/${id}`, payload);
-            toast.success('服务已更新');
+            toast.success('Dịch vụ đã được cập nhật');
         } else {
             payload.api_key = apiKey;
             await api.post('/tm-services', payload);
-            toast.success('服务已添加');
+            toast.success('Dịch vụ đã được thêm');
         }
         closeTmServiceModal();
         loadTmServices();
     } catch (e) {
-        toast.error('保存失败: ' + e.message);
+        toast.error('Lưu thất bại: ' + e.message);
     }
 }
 
 async function deleteTmService(id, name) {
-    const confirmed = await confirm(`确定要删除 Team Manager 服务「${name}」吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn xóa dịch vụ Team Manager "${name}" không?`);
     if (!confirmed) return;
     try {
         await api.delete(`/tm-services/${id}`);
-        toast.success('已删除');
+        toast.success('Đã xóa');
         loadTmServices();
     } catch (e) {
-        toast.error('删除失败: ' + e.message);
+        toast.error('Xóa thất bại: ' + e.message);
     }
 }
 
@@ -1199,7 +1199,7 @@ async function testTmServiceById(id) {
             toast.error(result.message);
         }
     } catch (e) {
-        toast.error('测试失败: ' + e.message);
+        toast.error('Kiểm tra thất bại: ' + e.message);
     }
 }
 
@@ -1209,16 +1209,16 @@ async function handleTestTmService() {
     const id = document.getElementById('tm-service-id').value;
 
     if (!apiUrl) {
-        toast.error('请先填写 API URL');
+        toast.error('Vui lòng nhập URL API trước');
         return;
     }
     if (!id && !apiKey) {
-        toast.error('请先填写 API Key');
+        toast.error('Vui lòng nhập API Key trước');
         return;
     }
 
     elements.testTmServiceBtn.disabled = true;
-    elements.testTmServiceBtn.textContent = '测试中...';
+    elements.testTmServiceBtn.textContent = 'Đang kiểm tra...';
 
     try {
         let result;
@@ -1233,10 +1233,10 @@ async function handleTestTmService() {
             toast.error(result.message);
         }
     } catch (e) {
-        toast.error('测试失败: ' + e.message);
+        toast.error('Kiểm tra thất bại: ' + e.message);
     } finally {
         elements.testTmServiceBtn.disabled = false;
-        elements.testTmServiceBtn.textContent = '🔌 测试连接';
+        elements.testTmServiceBtn.textContent = '🔌 Kiểm tra kết nối';
     }
 }
 
@@ -1252,7 +1252,7 @@ async function loadNewapiServices() {
 
 function renderNewapiServicesTable(services) {
     if (!services || services.length === 0) {
-        elements.newapiServicesTable.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px;">暂无 NEWAPI 服务，点击「添加服务」新增</td></tr>';
+        elements.newapiServicesTable.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px;">Chưa có dịch vụ NEWAPI, nhấn "Thêm dịch vụ" để tạo mới</td></tr>';
         return;
     }
     elements.newapiServicesTable.innerHTML = services.map(s => `
@@ -1262,11 +1262,11 @@ function renderNewapiServicesTable(services) {
             <td style="text-align:center;">${s.channel_type || 57}</td>
             <td style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(s.channel_base_url || '')}</td>
             <td style="font-size:0.8rem;color:var(--text-muted);max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(s.channel_models || '')}">${escapeHtml(s.channel_models || '')}</td>
-            <td style="text-align:center;" title="${s.enabled ? '已启用' : '已禁用'}">${s.enabled ? '✅' : '⭕'}</td>
+            <td style="text-align:center;" title="${s.enabled ? 'Đã bật' : 'Đã tắt'}">${s.enabled ? '✅' : '⭕'}</td>
             <td style="text-align:center;">${s.priority}</td>
             <td style="white-space:nowrap;">
-                <button class="btn btn-secondary btn-sm" onclick="editNewapiService(${s.id})">编辑</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteNewapiService(${s.id}, '${escapeHtml(s.name)}')">删除</button>
+                <button class="btn btn-secondary btn-sm" onclick="editNewapiService(${s.id})">Chỉnh sửa</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteNewapiService(${s.id}, '${escapeHtml(s.name)}')">Xóa</button>
             </td>
         </tr>
     `).join('');
@@ -1284,11 +1284,11 @@ function openNewapiServiceModal(service = null) {
     document.getElementById('newapi-service-priority').value = service ? service.priority : 0;
     document.getElementById('newapi-service-enabled').checked = service ? service.enabled : true;
     if (service) {
-        document.getElementById('newapi-service-key').placeholder = service.has_key ? '已配置，留空保持不变' : '请输入 Root Token / API Key';
+        document.getElementById('newapi-service-key').placeholder = service.has_key ? 'Đã cấu hình, để trống để giữ nguyên' : 'Vui lòng nhập Root Token / API Key';
     } else {
-        document.getElementById('newapi-service-key').placeholder = '请输入 Root Token / API Key';
+        document.getElementById('newapi-service-key').placeholder = 'Vui lòng nhập Root Token / API Key';
     }
-    elements.newapiServiceModalTitle.textContent = service ? '编辑 NEWAPI 服务' : '添加 NEWAPI 服务';
+    elements.newapiServiceModalTitle.textContent = service ? 'Chỉnh sửa dịch vụ NEWAPI' : 'Thêm dịch vụ NEWAPI';
     elements.newapiServiceEditModal.classList.add('active');
 }
 
@@ -1301,7 +1301,7 @@ async function editNewapiService(id) {
         const service = await api.get(`/newapi-services/${id}`);
         openNewapiServiceModal(service);
     } catch (e) {
-        toast.error('获取服务信息失败: ' + e.message);
+        toast.error('Lấy thông tin dịch vụ thất bại: ' + e.message);
     }
 }
 
@@ -1318,11 +1318,11 @@ async function handleSaveNewapiService(e) {
     const enabled = document.getElementById('newapi-service-enabled').checked;
 
     if (!name || !apiUrl) {
-        toast.error('名称和 API URL 不能为空');
+        toast.error('Tên và URL API không được để trống');
         return;
     }
     if (!id && !apiKey) {
-        toast.error('新增服务时 Root Token / API Key 不能为空');
+        toast.error('Khi thêm dịch vụ mới, Root Token / API Key không được để trống');
         return;
     }
 
@@ -1340,28 +1340,28 @@ async function handleSaveNewapiService(e) {
 
         if (id) {
             await api.patch(`/newapi-services/${id}`, payload);
-            toast.success('服务已更新');
+            toast.success('Dịch vụ đã được cập nhật');
         } else {
             payload.api_key = apiKey;
             await api.post('/newapi-services', payload);
-            toast.success('服务已添加');
+            toast.success('Dịch vụ đã được thêm');
         }
         closeNewapiServiceModal();
         loadNewapiServices();
     } catch (e) {
-        toast.error('保存失败: ' + e.message);
+        toast.error('Lưu thất bại: ' + e.message);
     }
 }
 
 async function deleteNewapiService(id, name) {
-    const confirmed = await confirm(`确定要删除 NEWAPI 服务「${name}」吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn xóa dịch vụ NEWAPI "${name}" không?`);
     if (!confirmed) return;
     try {
         await api.delete(`/newapi-services/${id}`);
-        toast.success('已删除');
+        toast.success('Đã xóa');
         loadNewapiServices();
     } catch (e) {
-        toast.error('删除失败: ' + e.message);
+        toast.error('Xóa thất bại: ' + e.message);
     }
 }
 
@@ -1381,7 +1381,7 @@ async function loadCpaServices() {
 
 function renderCpaServicesTable(services) {
     if (!services || services.length === 0) {
-        elements.cpaServicesTable.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">暂无 CPA 服务，点击「添加服务」新增</td></tr>';
+        elements.cpaServicesTable.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">Chưa có dịch vụ CPA, nhấn "Thêm dịch vụ" để tạo mới</td></tr>';
         return;
     }
     elements.cpaServicesTable.innerHTML = services.map(s => `
@@ -1389,12 +1389,12 @@ function renderCpaServicesTable(services) {
             <td>${escapeHtml(s.name)}</td>
             <td style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(s.api_url)}</td>
             <td style="text-align:center;">${s.include_proxy_url ? '🟢' : '⚪'}</td>
-            <td style="text-align:center;" title="${s.enabled ? '已启用' : '已禁用'}">${s.enabled ? '✅' : '⭕'}</td>
+            <td style="text-align:center;" title="${s.enabled ? 'Đã bật' : 'Đã tắt'}">${s.enabled ? '✅' : '⭕'}</td>
             <td style="text-align:center;">${s.priority}</td>
             <td style="white-space:nowrap;">
-                <button class="btn btn-secondary btn-sm" onclick="editCpaService(${s.id})">编辑</button>
-                <button class="btn btn-secondary btn-sm" onclick="testCpaServiceById(${s.id})">测试</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteCpaService(${s.id}, '${escapeHtml(s.name)}')">删除</button>
+                <button class="btn btn-secondary btn-sm" onclick="editCpaService(${s.id})">Chỉnh sửa</button>
+                <button class="btn btn-secondary btn-sm" onclick="testCpaServiceById(${s.id})">Kiểm tra</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCpaService(${s.id}, '${escapeHtml(s.name)}')">Xóa</button>
             </td>
         </tr>
     `).join('');
@@ -1408,7 +1408,7 @@ function openCpaServiceModal(service = null) {
     document.getElementById('cpa-service-priority').value = service ? service.priority : 0;
     document.getElementById('cpa-service-enabled').checked = service ? service.enabled : true;
     document.getElementById('cpa-service-include-proxy-url').checked = service ? !!service.include_proxy_url : false;
-    elements.cpaServiceModalTitle.textContent = service ? '编辑 CPA 服务' : '添加 CPA 服务';
+    elements.cpaServiceModalTitle.textContent = service ? 'Chỉnh sửa dịch vụ CPA' : 'Thêm dịch vụ CPA';
     elements.cpaServiceEditModal.classList.add('active');
 }
 
@@ -1421,7 +1421,7 @@ async function editCpaService(id) {
         const service = await api.get(`/cpa-services/${id}`);
         openCpaServiceModal(service);
     } catch (e) {
-        toast.error('获取服务信息失败: ' + e.message);
+        toast.error('Lấy thông tin dịch vụ thất bại: ' + e.message);
     }
 }
 
@@ -1436,11 +1436,11 @@ async function handleSaveCpaService(e) {
     const includeProxyUrl = document.getElementById('cpa-service-include-proxy-url').checked;
 
     if (!name || !apiUrl) {
-        toast.error('名称和 API URL 不能为空');
+        toast.error('Tên và URL API không được để trống');
         return;
     }
     if (!id && !apiToken) {
-        toast.error('新增服务时 API Token 不能为空');
+        toast.error('Khi thêm dịch vụ mới, API Token không được để trống');
         return;
     }
 
@@ -1450,28 +1450,28 @@ async function handleSaveCpaService(e) {
 
         if (id) {
             await api.patch(`/cpa-services/${id}`, payload);
-            toast.success('服务已更新');
+            toast.success('Dịch vụ đã được cập nhật');
         } else {
             payload.api_token = apiToken;
             await api.post('/cpa-services', payload);
-            toast.success('服务已添加');
+            toast.success('Dịch vụ đã được thêm');
         }
         closeCpaServiceModal();
         loadCpaServices();
     } catch (e) {
-        toast.error('保存失败: ' + e.message);
+        toast.error('Lưu thất bại: ' + e.message);
     }
 }
 
 async function deleteCpaService(id, name) {
-    const confirmed = await confirm(`确定要删除 CPA 服务「${name}」吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn xóa dịch vụ CPA "${name}" không?`);
     if (!confirmed) return;
     try {
         await api.delete(`/cpa-services/${id}`);
-        toast.success('已删除');
+        toast.success('Đã xóa');
         loadCpaServices();
     } catch (e) {
-        toast.error('删除失败: ' + e.message);
+        toast.error('Xóa thất bại: ' + e.message);
     }
 }
 
@@ -1484,7 +1484,7 @@ async function testCpaServiceById(id) {
             toast.error(result.message);
         }
     } catch (e) {
-        toast.error('测试失败: ' + e.message);
+        toast.error('Kiểm tra thất bại: ' + e.message);
     }
 }
 
@@ -1494,22 +1494,22 @@ async function handleTestCpaService() {
     const id = document.getElementById('cpa-service-id').value;
 
     if (!apiUrl) {
-        toast.error('请先填写 API URL');
+        toast.error('Vui lòng nhập URL API trước');
         return;
     }
-    // 新增时必须有 token，编辑时 token 可为空（用已保存的）
+    // 新增时必须有 token，Chỉnh sửa时 token 可为空（用已保存的）
     if (!id && !apiToken) {
-        toast.error('请先填写 API Token');
+        toast.error('Vui lòng nhập API Token trước');
         return;
     }
 
     elements.testCpaServiceBtn.disabled = true;
-    elements.testCpaServiceBtn.textContent = '测试中...';
+    elements.testCpaServiceBtn.textContent = 'Đang kiểm tra...';
 
     try {
         let result;
         if (id && !apiToken) {
-            // 编辑时未填 token，直接测试已保存的服务
+            // Chỉnh sửa时未填 token，直接Kiểm tra已保存的服务
             result = await api.post(`/cpa-services/${id}/test`);
         } else {
             result = await api.post('/cpa-services/test-connection', { api_url: apiUrl, api_token: apiToken });
@@ -1520,10 +1520,10 @@ async function handleTestCpaService() {
             toast.error(result.message);
         }
     } catch (e) {
-        toast.error('测试失败: ' + e.message);
+        toast.error('Kiểm tra thất bại: ' + e.message);
     } finally {
         elements.testCpaServiceBtn.disabled = false;
-        elements.testCpaServiceBtn.textContent = '🔌 测试连接';
+        elements.testCpaServiceBtn.textContent = '🔌 Kiểm tra kết nối';
     }
 }
 
@@ -1539,7 +1539,7 @@ async function loadSub2ApiServices() {
         renderSub2ApiServices(services);
     } catch (e) {
         if (elements.sub2ApiServicesTable) {
-            elements.sub2ApiServicesTable.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">加载失败</td></tr>';
+            elements.sub2ApiServicesTable.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Tải thất bại</td></tr>';
         }
     }
 }
@@ -1547,19 +1547,19 @@ async function loadSub2ApiServices() {
 function renderSub2ApiServices(services) {
     if (!elements.sub2ApiServicesTable) return;
     if (!services || services.length === 0) {
-        elements.sub2ApiServicesTable.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">暂无 Sub2API 服务，点击「添加服务」新增</td></tr>';
+        elements.sub2ApiServicesTable.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Chưa có dịch vụ Sub2API, nhấn "Thêm dịch vụ" để tạo mới</td></tr>';
         return;
     }
     elements.sub2ApiServicesTable.innerHTML = services.map(s => `
         <tr>
             <td>${escapeHtml(s.name)}</td>
             <td style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(s.api_url)}</td>
-            <td style="text-align:center;" title="${s.enabled ? '已启用' : '已禁用'}">${s.enabled ? '✅' : '⭕'}</td>
+            <td style="text-align:center;" title="${s.enabled ? 'Đã bật' : 'Đã tắt'}">${s.enabled ? '✅' : '⭕'}</td>
             <td style="text-align:center;">${s.priority}</td>
             <td style="white-space:nowrap;">
-                <button class="btn btn-secondary btn-sm" onclick="editSub2ApiService(${s.id})">编辑</button>
-                <button class="btn btn-secondary btn-sm" onclick="testSub2ApiServiceById(${s.id})">测试</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteSub2ApiService(${s.id}, '${escapeHtml(s.name)}')">删除</button>
+                <button class="btn btn-secondary btn-sm" onclick="editSub2ApiService(${s.id})">Chỉnh sửa</button>
+                <button class="btn btn-secondary btn-sm" onclick="testSub2ApiServiceById(${s.id})">Kiểm tra</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSub2ApiService(${s.id}, '${escapeHtml(s.name)}')">Xóa</button>
             </td>
         </tr>
     `).join('');
@@ -1567,7 +1567,7 @@ function renderSub2ApiServices(services) {
 
 function openSub2ApiServiceModal(svc = null) {
     _sub2apiEditingId = svc ? svc.id : null;
-    elements.sub2ApiServiceModalTitle.textContent = svc ? '编辑 Sub2API 服务' : '添加 Sub2API 服务';
+    elements.sub2ApiServiceModalTitle.textContent = svc ? 'Chỉnh sửa dịch vụ Sub2API' : 'Thêm dịch vụ Sub2API';
     elements.sub2ApiServiceForm.reset();
     document.getElementById('sub2api-service-id').value = svc ? svc.id : '';
     if (svc) {
@@ -1575,7 +1575,7 @@ function openSub2ApiServiceModal(svc = null) {
         document.getElementById('sub2api-service-url').value = svc.api_url || '';
         document.getElementById('sub2api-service-priority').value = svc.priority ?? 0;
         document.getElementById('sub2api-service-enabled').checked = svc.enabled !== false;
-        document.getElementById('sub2api-service-key').placeholder = svc.has_key ? '已配置，留空保持不变' : '请输入 API Key';
+        document.getElementById('sub2api-service-key').placeholder = svc.has_key ? 'Đã cấu hình, để trống để giữ nguyên' : 'Vui lòng nhập API Key';
     }
     elements.sub2ApiServiceEditModal.classList.add('active');
 }
@@ -1591,18 +1591,18 @@ async function editSub2ApiService(id) {
         const svc = await api.get(`/sub2api-services/${id}`);
         openSub2ApiServiceModal(svc);
     } catch (e) {
-        toast.error('加载失败: ' + e.message);
+        toast.error('Tải thất bại: ' + e.message);
     }
 }
 
 async function deleteSub2ApiService(id, name) {
-    if (!confirm(`确认删除 Sub2API 服务「${name}」？`)) return;
+    if (!confirm(`Xác nhận xóa dịch vụ Sub2API "${name}"?`)) return;
     try {
         await api.delete(`/sub2api-services/${id}`);
-        toast.success('服务已删除');
+        toast.success('Dịch vụ đã được xóa');
         loadSub2ApiServices();
     } catch (e) {
-        toast.error('删除失败: ' + e.message);
+        toast.error('Xóa thất bại: ' + e.message);
     }
 }
 
@@ -1617,7 +1617,7 @@ async function handleSaveSub2ApiService(e) {
         enabled: document.getElementById('sub2api-service-enabled').checked,
     };
     if (!id && !data.api_key) {
-        toast.error('请填写 API Key');
+        toast.error('Vui lòng nhập API Key');
         return;
     }
     if (!data.api_key) delete data.api_key;
@@ -1625,15 +1625,15 @@ async function handleSaveSub2ApiService(e) {
     try {
         if (id) {
             await api.patch(`/sub2api-services/${id}`, data);
-            toast.success('服务已更新');
+            toast.success('Dịch vụ đã được cập nhật');
         } else {
             await api.post('/sub2api-services', data);
-            toast.success('服务已添加');
+            toast.success('Dịch vụ đã được thêm');
         }
         closeSub2ApiServiceModal();
         loadSub2ApiServices();
     } catch (e) {
-        toast.error('保存失败: ' + e.message);
+        toast.error('Lưu thất bại: ' + e.message);
     }
 }
 
@@ -1646,7 +1646,7 @@ async function testSub2ApiServiceById(id) {
             toast.error(result.message);
         }
     } catch (e) {
-        toast.error('测试失败: ' + e.message);
+        toast.error('Kiểm tra thất bại: ' + e.message);
     }
 }
 
@@ -1656,16 +1656,16 @@ async function handleTestSub2ApiService() {
     const id = document.getElementById('sub2api-service-id').value;
 
     if (!apiUrl) {
-        toast.error('请先填写 API URL');
+        toast.error('Vui lòng nhập URL API trước');
         return;
     }
     if (!id && !apiKey) {
-        toast.error('请先填写 API Key');
+        toast.error('Vui lòng nhập API Key trước');
         return;
     }
 
     elements.testSub2ApiServiceBtn.disabled = true;
-    elements.testSub2ApiServiceBtn.textContent = '测试中...';
+    elements.testSub2ApiServiceBtn.textContent = 'Đang kiểm tra...';
 
     try {
         let result;
@@ -1680,10 +1680,10 @@ async function handleTestSub2ApiService() {
             toast.error(result.message);
         }
     } catch (e) {
-        toast.error('测试失败: ' + e.message);
+        toast.error('Kiểm tra thất bại: ' + e.message);
     } finally {
         elements.testSub2ApiServiceBtn.disabled = false;
-        elements.testSub2ApiServiceBtn.textContent = '🔌 测试连接';
+        elements.testSub2ApiServiceBtn.textContent = '🔌 Kiểm tra kết nối';
     }
 }
 

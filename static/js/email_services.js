@@ -54,7 +54,7 @@ const elements = {
     addFreemailFields: document.getElementById('add-freemail-fields'),
     addImapFields: document.getElementById('add-imap-fields'),
 
-    // 编辑自定义域名模态框
+    // Chỉnh sửa自定义域名模态框
     editCustomModal: document.getElementById('edit-custom-modal'),
     editCustomForm: document.getElementById('edit-custom-form'),
     closeEditCustomModal: document.getElementById('close-edit-custom-modal'),
@@ -67,7 +67,7 @@ const elements = {
     editCustomTypeBadge: document.getElementById('edit-custom-type-badge'),
     editCustomSubTypeHidden: document.getElementById('edit-custom-sub-type-hidden'),
 
-    // 编辑 Outlook 模态框
+    // Chỉnh sửa Outlook 模态框
     editOutlookModal: document.getElementById('edit-outlook-modal'),
     editOutlookForm: document.getElementById('edit-outlook-form'),
     closeEditOutlookModal: document.getElementById('close-edit-outlook-modal'),
@@ -75,11 +75,11 @@ const elements = {
 };
 
 const CUSTOM_SUBTYPE_LABELS = {
-    moemail: '🔗 MoeMail（自定义域名 API）',
-    tempmail: '📮 TempMail（自部署 Cloudflare Worker）',
+    moemail: '🔗 MoeMail (API tên miền tùy chỉnh)',
+    tempmail: '📮 TempMail (Cloudflare Worker tự host)',
     duckmail: '🦆 DuckMail（DuckMail API）',
-    freemail: 'Freemail（自部署 Cloudflare Worker）',
-    imap: '📧 IMAP 邮箱（Gmail/QQ/163等）'
+    freemail: 'Freemail (Cloudflare Worker tự triển khai)',
+    imap: '📧 Email IMAP (Gmail/QQ/163, v.v.)'
 };
 
 // 初始化
@@ -93,11 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 事件监听
 function initEventListeners() {
-    // Outlook 导入展开/收起
+    // Outlook 导入Mở rộng/Thu gọn
     elements.toggleOutlookImport.addEventListener('click', () => {
         const isHidden = elements.outlookImportBody.style.display === 'none';
         elements.outlookImportBody.style.display = isHidden ? 'block' : 'none';
-        elements.toggleOutlookImport.textContent = isHidden ? '收起' : '展开';
+        elements.toggleOutlookImport.textContent = isHidden ? 'Thu gọn' : 'Mở rộng';
     });
 
     // Outlook 导入
@@ -119,7 +119,7 @@ function initEventListeners() {
         updateBatchButtons();
     });
 
-    // Outlook 批量删除
+    // Outlook 批量Xóa
     elements.batchDeleteOutlookBtn.addEventListener('click', handleBatchDeleteOutlook);
 
     // 自定义域名全选
@@ -146,12 +146,12 @@ function initEventListeners() {
     // 类型切换（添加表单）
     elements.customSubType.addEventListener('change', (e) => switchAddSubType(e.target.value));
 
-    // 编辑自定义域名
+    // Chỉnh sửa自定义域名
     elements.closeEditCustomModal.addEventListener('click', () => elements.editCustomModal.classList.remove('active'));
     elements.cancelEditCustom.addEventListener('click', () => elements.editCustomModal.classList.remove('active'));
     elements.editCustomForm.addEventListener('submit', handleEditCustom);
 
-    // 编辑 Outlook
+    // Chỉnh sửa Outlook
     elements.closeEditOutlookModal.addEventListener('click', () => elements.editOutlookModal.classList.remove('active'));
     elements.cancelEditOutlook.addEventListener('click', () => elements.editOutlookModal.classList.remove('active'));
     elements.editOutlookForm.addEventListener('submit', handleEditOutlook);
@@ -160,7 +160,7 @@ function initEventListeners() {
     elements.tempmailForm.addEventListener('submit', handleSaveTempmail);
     elements.testTempmailBtn.addEventListener('click', handleTestTempmail);
 
-    // 点击其他地方关闭更多菜单
+    // 点击其他地方关闭Thêm菜单
     document.addEventListener('click', () => {
         document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
     });
@@ -188,7 +188,7 @@ function switchAddSubType(subType) {
     elements.addImapFields.style.display = subType === 'imap' ? '' : 'none';
 }
 
-// 切换编辑表单子类型显示
+// 切换Chỉnh sửa表单子类型显示
 function switchEditSubType(subType) {
     elements.editCustomSubTypeHidden.value = subType;
     elements.editMoemailFields.style.display = subType === 'moemail' ? '' : 'none';
@@ -205,10 +205,10 @@ async function loadStats() {
         const data = await api.get('/email-services/stats');
         elements.outlookCount.textContent = data.outlook_count || 0;
         elements.customCount.textContent = (data.custom_count || 0) + (data.temp_mail_count || 0) + (data.duck_mail_count || 0) + (data.freemail_count || 0) + (data.imap_mail_count || 0);
-        elements.tempmailStatus.textContent = data.tempmail_available ? '可用' : '不可用';
+        elements.tempmailStatus.textContent = data.tempmail_available ? 'Khả dụng' : 'Không khả dụng';
         elements.totalEnabled.textContent = data.enabled_count || 0;
     } catch (error) {
-        console.error('加载统计信息失败:', error);
+        console.error('Tải thống kê thất bại:', error);
     }
 }
 
@@ -224,8 +224,8 @@ async function loadOutlookServices() {
                     <td colspan="7">
                         <div class="empty-state">
                             <div class="empty-state-icon">📭</div>
-                            <div class="empty-state-title">暂无 Outlook 账户</div>
-                            <div class="empty-state-description">请使用上方导入功能添加账户</div>
+                            <div class="empty-state-title">Chưa có tài khoản Outlook nào</div>
+                            <div class="empty-state-description">Vui lòng dùng chức năng nhập ở phía trên để thêm tài khoản</div>
                         </div>
                     </td>
                 </tr>
@@ -239,23 +239,23 @@ async function loadOutlookServices() {
                 <td>${escapeHtml(service.config?.email || service.name)}</td>
                 <td>
                     <span class="status-badge ${service.config?.has_oauth ? 'active' : 'pending'}">
-                        ${service.config?.has_oauth ? 'OAuth' : '密码'}
+                        ${service.config?.has_oauth ? 'OAuth' : 'Mật khẩu'}
                     </span>
                 </td>
-                <td title="${service.enabled ? '已启用' : '已禁用'}">${service.enabled ? '✅' : '⭕'}</td>
+                <td title="${service.enabled ? 'Đã bật' : 'Đã tắt'}">${service.enabled ? '✅' : '⭕'}</td>
                 <td>${service.priority}</td>
                 <td>${format.date(service.last_used)}</td>
                 <td>
                     <div style="display:flex;gap:4px;align-items:center;white-space:nowrap;">
-                        <button class="btn btn-secondary btn-sm" onclick="editOutlookService(${service.id})">编辑</button>
+                        <button class="btn btn-secondary btn-sm" onclick="editOutlookService(${service.id})">Chỉnh sửa</button>
                         <div class="dropdown" style="position:relative;">
-                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleEmailMoreMenu(this)">更多</button>
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleEmailMoreMenu(this)">Thêm</button>
                             <div class="dropdown-menu" style="min-width:80px;">
-                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);toggleService(${service.id}, ${!service.enabled})">${service.enabled ? '禁用' : '启用'}</a>
-                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);testService(${service.id})">测试</a>
+                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);toggleService(${service.id}, ${!service.enabled})">${service.enabled ? 'Tắt' : 'Bật'}</a>
+                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);testService(${service.id})">Kiểm tra</a>
                             </div>
                         </div>
-                        <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id}, '${escapeHtml(service.name)}')">删除</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id}, '${escapeHtml(service.name)}')">Xóa</button>
                     </div>
                 </td>
             </tr>
@@ -271,8 +271,8 @@ async function loadOutlookServices() {
         });
 
     } catch (error) {
-        console.error('加载 Outlook 服务失败:', error);
-        elements.outlookTable.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-title">加载失败</div></div></td></tr>`;
+        console.error('Tải dịch vụ Outlook thất bại:', error);
+        elements.outlookTable.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-title">Tải thất bại</div></div></td></tr>`;
     }
 }
 
@@ -303,7 +303,7 @@ function getCustomServiceAddress(service) {
     if (!domain) {
         return escapeHtml(baseUrl);
     }
-    return `${escapeHtml(baseUrl)}<div style="color: var(--text-muted); margin-top: 4px;">默认域名：@${escapeHtml(domain)}</div>`;
+    return `${escapeHtml(baseUrl)}<div style="color: var(--text-muted); margin-top: 4px;">Tên miền mặc định: @${escapeHtml(domain)}</div>`;
 }
 
 // 加载自定义邮箱服务（moe_mail + temp_mail + duck_mail + freemail 合并）
@@ -330,8 +330,8 @@ async function loadCustomServices() {
                     <td colspan="8">
                         <div class="empty-state">
                             <div class="empty-state-icon">📭</div>
-                            <div class="empty-state-title">暂无自定义邮箱服务</div>
-                            <div class="empty-state-description">点击「添加服务」按钮创建新服务</div>
+                            <div class="empty-state-title">Chưa có dịch vụ email tùy chỉnh nào</div>
+                            <div class="empty-state-description">Nhấn nút "Thêm dịch vụ" để tạo dịch vụ mới</div>
                         </div>
                     </td>
                 </tr>
@@ -346,20 +346,20 @@ async function loadCustomServices() {
                 <td>${escapeHtml(service.name)}</td>
                 <td>${getCustomServiceTypeBadge(service._subType)}</td>
                 <td style="font-size: 0.75rem;">${getCustomServiceAddress(service)}</td>
-                <td title="${service.enabled ? '已启用' : '已禁用'}">${service.enabled ? '✅' : '⭕'}</td>
+                <td title="${service.enabled ? 'Đã bật' : 'Đã tắt'}">${service.enabled ? '✅' : '⭕'}</td>
                 <td>${service.priority}</td>
                 <td>${format.date(service.last_used)}</td>
                 <td>
                     <div style="display:flex;gap:4px;align-items:center;white-space:nowrap;">
-                        <button class="btn btn-secondary btn-sm" onclick="editCustomService(${service.id}, '${service._subType}')">编辑</button>
+                        <button class="btn btn-secondary btn-sm" onclick="editCustomService(${service.id}, '${service._subType}')">Chỉnh sửa</button>
                         <div class="dropdown" style="position:relative;">
-                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleEmailMoreMenu(this)">更多</button>
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();toggleEmailMoreMenu(this)">Thêm</button>
                             <div class="dropdown-menu" style="min-width:80px;">
-                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);toggleService(${service.id}, ${!service.enabled})">${service.enabled ? '禁用' : '启用'}</a>
-                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);testService(${service.id})">测试</a>
+                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);toggleService(${service.id}, ${!service.enabled})">${service.enabled ? 'Tắt' : 'Bật'}</a>
+                                <a href="#" class="dropdown-item" onclick="event.preventDefault();closeEmailMoreMenu(this);testService(${service.id})">Kiểm tra</a>
                             </div>
                         </div>
-                        <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id}, '${escapeHtml(service.name)}')">删除</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id}, '${escapeHtml(service.name)}')">Xóa</button>
                     </div>
                 </td>
             </tr>`;
@@ -374,7 +374,7 @@ async function loadCustomServices() {
         });
 
     } catch (error) {
-        console.error('加载自定义邮箱服务失败:', error);
+        console.error('Tải dịch vụ email tùy chỉnh thất bại:', error);
     }
 }
 
@@ -394,10 +394,10 @@ async function loadTempmailConfig() {
 // Outlook 导入
 async function handleOutlookImport() {
     const data = elements.outlookImportData.value.trim();
-    if (!data) { toast.error('请输入导入数据'); return; }
+    if (!data) { toast.error('Vui lòng nhập dữ liệu cần import'); return; }
 
     elements.outlookImportBtn.disabled = true;
-    elements.outlookImportBtn.textContent = '导入中...';
+    elements.outlookImportBtn.textContent = 'Đang nhập...';
 
     try {
         const result = await api.post('/email-services/outlook/batch-import', {
@@ -409,23 +409,23 @@ async function handleOutlookImport() {
         elements.importResult.style.display = 'block';
         elements.importResult.innerHTML = `
             <div class="import-stats">
-                <span>✅ 成功导入: <strong>${result.success || 0}</strong></span>
-                <span>❌ 失败: <strong>${result.failed || 0}</strong></span>
+                <span>✅ Import thành công: <strong>${result.success || 0}</strong></span>
+                <span>❌ Thất bại: <strong>${result.failed || 0}</strong></span>
             </div>
-            ${result.errors?.length ? `<div class="import-errors" style="margin-top: var(--spacing-sm);"><strong>错误详情：</strong><ul>${result.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul></div>` : ''}
+            ${result.errors?.length ? `<div class="import-errors" style="margin-top: var(--spacing-sm);"><strong>Chi tiết lỗi:</strong><ul>${result.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul></div>` : ''}
         `;
 
         if (result.success > 0) {
-            toast.success(`成功导入 ${result.success} 个账户`);
+            toast.success(`Import thành công ${result.success} tài khoản`);
             loadOutlookServices();
             loadStats();
             elements.outlookImportData.value = '';
         }
     } catch (error) {
-        toast.error('导入失败: ' + error.message);
+        toast.error('Import thất bại: ' + error.message);
     } finally {
         elements.outlookImportBtn.disabled = false;
-        elements.outlookImportBtn.textContent = '📥 开始导入';
+        elements.outlookImportBtn.textContent = '📥 Bắt đầu nhập';
     }
 }
 
@@ -487,13 +487,13 @@ async function handleAddCustom(e) {
 
     try {
         await api.post('/email-services', data);
-        toast.success('服务添加成功');
+        toast.success('Thêm dịch vụ thành công');
         elements.addCustomModal.classList.remove('active');
         e.target.reset();
         loadCustomServices();
         loadStats();
     } catch (error) {
-        toast.error('添加失败: ' + error.message);
+        toast.error('Thêm thất bại: ' + error.message);
     }
 }
 
@@ -501,59 +501,59 @@ async function handleAddCustom(e) {
 async function toggleService(id, enabled) {
     try {
         await api.patch(`/email-services/${id}`, { enabled });
-        toast.success(enabled ? '已启用' : '已禁用');
+        toast.success(enabled ? 'Đã bật' : 'Đã tắt');
         loadOutlookServices();
         loadCustomServices();
         loadStats();
     } catch (error) {
-        toast.error('操作失败: ' + error.message);
+        toast.error('Thao tác thất bại: ' + error.message);
     }
 }
 
-// 测试服务
+// Kiểm tra服务
 async function testService(id) {
     try {
         const result = await api.post(`/email-services/${id}/test`);
-        if (result.success) toast.success('测试成功');
-        else toast.error('测试失败: ' + (result.error || '未知错误'));
+        if (result.success) toast.success('Kiểm tra thành công');
+        else toast.error('Kiểm tra thất bại: ' + (result.error || 'Lỗi không xác định'));
     } catch (error) {
-        toast.error('测试失败: ' + error.message);
+        toast.error('Kiểm tra thất bại: ' + error.message);
     }
 }
 
-// 删除服务
+// Xóa服务
 async function deleteService(id, name) {
-    const confirmed = await confirm(`确定要删除 "${name}" 吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn xóa "${name}" không?`);
     if (!confirmed) return;
     try {
         await api.delete(`/email-services/${id}`);
-        toast.success('已删除');
+        toast.success('Đã xóa');
         selectedOutlook.delete(id);
         selectedCustom.delete(id);
         loadOutlookServices();
         loadCustomServices();
         loadStats();
     } catch (error) {
-        toast.error('删除失败: ' + error.message);
+        toast.error('Xóa thất bại: ' + error.message);
     }
 }
 
-// 批量删除 Outlook
+// 批量Xóa Outlook
 async function handleBatchDeleteOutlook() {
     if (selectedOutlook.size === 0) return;
-    const confirmed = await confirm(`确定要删除选中的 ${selectedOutlook.size} 个账户吗？`);
+    const confirmed = await confirm(`Bạn có chắc muốn xóa ${selectedOutlook.size} tài khoản đã chọn không?`);
     if (!confirmed) return;
     try {
         const result = await api.request('/email-services/outlook/batch', {
             method: 'DELETE',
             body: Array.from(selectedOutlook)
         });
-        toast.success(`成功删除 ${result.deleted || selectedOutlook.size} 个账户`);
+        toast.success(`Xóa thành công ${result.deleted || selectedOutlook.size} tài khoản`);
         selectedOutlook.clear();
         loadOutlookServices();
         loadStats();
     } catch (error) {
-        toast.error('删除失败: ' + error.message);
+        toast.error('Xóa thất bại: ' + error.message);
     }
 }
 
@@ -565,27 +565,27 @@ async function handleSaveTempmail(e) {
             api_url: elements.tempmailApi.value,
             enabled: elements.tempmailEnabled.checked
         });
-        toast.success('配置已保存');
+        toast.success('Cấu hình đã được lưu');
     } catch (error) {
-        toast.error('保存失败: ' + error.message);
+        toast.error('Lưu thất bại: ' + error.message);
     }
 }
 
-// 测试临时邮箱
+// Kiểm tra临时邮箱
 async function handleTestTempmail() {
     elements.testTempmailBtn.disabled = true;
-    elements.testTempmailBtn.textContent = '测试中...';
+    elements.testTempmailBtn.textContent = 'Đang kiểm tra...';
     try {
         const result = await api.post('/email-services/test-tempmail', {
             api_url: elements.tempmailApi.value
         });
-        if (result.success) toast.success('临时邮箱连接正常');
-        else toast.error('连接失败: ' + (result.error || '未知错误'));
+        if (result.success) toast.success('Kết nối email tạm thời bình thường');
+        else toast.error('Kết nối thất bại: ' + (result.error || 'Lỗi không xác định'));
     } catch (error) {
-        toast.error('测试失败: ' + error.message);
+        toast.error('Kiểm tra thất bại: ' + error.message);
     } finally {
         elements.testTempmailBtn.disabled = false;
-        elements.testTempmailBtn.textContent = '🔌 测试连接';
+        elements.testTempmailBtn.textContent = '🔌 Kiểm tra kết nối';
     }
 }
 
@@ -593,7 +593,7 @@ async function handleTestTempmail() {
 function updateBatchButtons() {
     const count = selectedOutlook.size;
     elements.batchDeleteOutlookBtn.disabled = count === 0;
-    elements.batchDeleteOutlookBtn.textContent = count > 0 ? `🗑️ 删除选中 (${count})` : '🗑️ 批量删除';
+    elements.batchDeleteOutlookBtn.textContent = count > 0 ? `🗑️ Xóa mục đã chọn (${count})` : '🗑️ Xóa hàng loạt';
 }
 
 // HTML 转义
@@ -604,9 +604,9 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ============== 编辑功能 ==============
+// ============== Chỉnh sửa功能 ==============
 
-// 编辑自定义邮箱服务（支持 moemail / tempmail / duckmail）
+// Chỉnh sửa自定义邮箱服务（支持 moemail / tempmail / duckmail）
 async function editCustomService(id, subType) {
     try {
         const service = await api.get(`/email-services/${id}/full`);
@@ -632,23 +632,23 @@ async function editCustomService(id, subType) {
         if (resolvedSubType === 'moemail') {
             document.getElementById('edit-custom-api-url').value = service.config?.base_url || '';
             document.getElementById('edit-custom-api-key').value = '';
-            document.getElementById('edit-custom-api-key').placeholder = service.config?.api_key ? '已设置，留空保持不变' : 'API Key';
+            document.getElementById('edit-custom-api-key').placeholder = service.config?.api_key ? 'Đã thiết lập, để trống để giữ nguyên' : 'API Key';
             document.getElementById('edit-custom-domain').value = service.config?.default_domain || service.config?.domain || '';
         } else if (resolvedSubType === 'tempmail') {
             document.getElementById('edit-tm-base-url').value = service.config?.base_url || '';
             document.getElementById('edit-tm-admin-password').value = '';
-            document.getElementById('edit-tm-admin-password').placeholder = service.config?.admin_password ? '已设置，留空保持不变' : '请输入 Admin 密码';
+            document.getElementById('edit-tm-admin-password').placeholder = service.config?.admin_password ? 'Đã thiết lập, để trống để giữ nguyên' : 'Vui lòng nhập mật khẩu Admin';
             document.getElementById('edit-tm-domain').value = service.config?.domain || '';
         } else if (resolvedSubType === 'duckmail') {
             document.getElementById('edit-dm-base-url').value = service.config?.base_url || '';
             document.getElementById('edit-dm-api-key').value = '';
-            document.getElementById('edit-dm-api-key').placeholder = service.config?.api_key ? '已设置，留空保持不变' : '请输入 API Key（可选）';
+            document.getElementById('edit-dm-api-key').placeholder = service.config?.api_key ? 'Đã thiết lập, để trống để giữ nguyên' : 'Vui lòng nhập API key (tùy chọn)';
             document.getElementById('edit-dm-domain').value = service.config?.default_domain || '';
             document.getElementById('edit-dm-password-length').value = service.config?.password_length || 12;
         } else if (resolvedSubType === 'freemail') {
             document.getElementById('edit-fm-base-url').value = service.config?.base_url || '';
             document.getElementById('edit-fm-admin-token').value = '';
-            document.getElementById('edit-fm-admin-token').placeholder = service.config?.admin_token ? '已设置，留空保持不变' : '请输入 Admin Token';
+            document.getElementById('edit-fm-admin-token').placeholder = service.config?.admin_token ? 'Đã thiết lập, để trống để giữ nguyên' : 'Vui lòng nhập Admin Token';
             document.getElementById('edit-fm-domain').value = service.config?.domain || '';
         } else {
             document.getElementById('edit-imap-host').value = service.config?.host || '';
@@ -656,16 +656,16 @@ async function editCustomService(id, subType) {
             document.getElementById('edit-imap-use-ssl').value = service.config?.use_ssl !== false ? 'true' : 'false';
             document.getElementById('edit-imap-email').value = service.config?.email || '';
             document.getElementById('edit-imap-password').value = '';
-            document.getElementById('edit-imap-password').placeholder = service.config?.password ? '已设置，留空保持不变' : '请输入密码/授权码';
+            document.getElementById('edit-imap-password').placeholder = service.config?.password ? 'Đã thiết lập, để trống để giữ nguyên' : 'Vui lòng nhập mật khẩu/mã ứng dụng';
         }
 
         elements.editCustomModal.classList.add('active');
     } catch (error) {
-        toast.error('获取服务信息失败: ' + error.message);
+        toast.error('Lấy thông tin dịch vụ thất bại: ' + error.message);
     }
 }
 
-// 保存编辑自定义邮箱服务
+// 保存Chỉnh sửa自定义邮箱服务
 async function handleEditCustom(e) {
     e.preventDefault();
     const id = document.getElementById('edit-custom-id').value;
@@ -723,35 +723,35 @@ async function handleEditCustom(e) {
 
     try {
         await api.patch(`/email-services/${id}`, updateData);
-        toast.success('服务更新成功');
+        toast.success('Cập nhật dịch vụ thành công');
         elements.editCustomModal.classList.remove('active');
         loadCustomServices();
         loadStats();
     } catch (error) {
-        toast.error('更新失败: ' + error.message);
+        toast.error('Cập nhật thất bại: ' + error.message);
     }
 }
 
-// 编辑 Outlook 服务
+// Chỉnh sửa Outlook 服务
 async function editOutlookService(id) {
     try {
         const service = await api.get(`/email-services/${id}/full`);
         document.getElementById('edit-outlook-id').value = service.id;
         document.getElementById('edit-outlook-email').value = service.config?.email || service.name || '';
         document.getElementById('edit-outlook-password').value = '';
-        document.getElementById('edit-outlook-password').placeholder = service.config?.password ? '已设置，留空保持不变' : '请输入密码';
+        document.getElementById('edit-outlook-password').placeholder = service.config?.password ? 'Đã thiết lập, để trống để giữ nguyên' : 'Vui lòng nhập mật khẩu';
         document.getElementById('edit-outlook-client-id').value = service.config?.client_id || '';
         document.getElementById('edit-outlook-refresh-token').value = '';
-        document.getElementById('edit-outlook-refresh-token').placeholder = service.config?.refresh_token ? '已设置，留空保持不变' : 'OAuth Refresh Token';
+        document.getElementById('edit-outlook-refresh-token').placeholder = service.config?.refresh_token ? 'Đã thiết lập, để trống để giữ nguyên' : 'OAuth Refresh Token';
         document.getElementById('edit-outlook-priority').value = service.priority || 0;
         document.getElementById('edit-outlook-enabled').checked = service.enabled;
         elements.editOutlookModal.classList.add('active');
     } catch (error) {
-        toast.error('获取服务信息失败: ' + error.message);
+        toast.error('Lấy thông tin dịch vụ thất bại: ' + error.message);
     }
 }
 
-// 保存编辑 Outlook 服务
+// 保存Chỉnh sửa Outlook 服务
 async function handleEditOutlook(e) {
     e.preventDefault();
     const id = document.getElementById('edit-outlook-id').value;
@@ -761,7 +761,7 @@ async function handleEditOutlook(e) {
     try {
         currentService = await api.get(`/email-services/${id}/full`);
     } catch (error) {
-        toast.error('获取服务信息失败');
+        toast.error('Lấy thông tin dịch vụ thất bại');
         return;
     }
 
@@ -779,11 +779,11 @@ async function handleEditOutlook(e) {
 
     try {
         await api.patch(`/email-services/${id}`, updateData);
-        toast.success('账户更新成功');
+        toast.success('Cập nhật tài khoản thành công');
         elements.editOutlookModal.classList.remove('active');
         loadOutlookServices();
         loadStats();
     } catch (error) {
-        toast.error('更新失败: ' + error.message);
+        toast.error('Cập nhật thất bại: ' + error.message);
     }
 }

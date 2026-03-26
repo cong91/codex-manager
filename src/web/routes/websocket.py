@@ -91,7 +91,7 @@ async def task_websocket(websocket: WebSocket, task_uuid: str):
                         "type": "status",
                         "task_uuid": task_uuid,
                         "status": "cancelling",
-                        "message": "取消请求已提交"
+                        "message": "Yêu cầu hủy đã được gửi"
                     })
 
             except asyncio.TimeoutError:
@@ -168,7 +168,7 @@ async def batch_websocket(websocket: WebSocket, batch_id: str):
                         "type": "status",
                         "batch_id": batch_id,
                         "status": "cancelling",
-                        "message": "取消请求已提交"
+                        "message": "Yêu cầu hủy đã được gửi"
                     })
 
             except asyncio.TimeoutError:

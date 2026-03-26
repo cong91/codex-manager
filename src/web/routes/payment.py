@@ -64,7 +64,7 @@ def generate_payment_link(request: GenerateLinkRequest):
     with get_db() as db:
         account = db.query(Account).filter(Account.id == request.account_id).first()
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         proxy = request.proxy or get_settings().proxy_url
 
@@ -81,12 +81,12 @@ def generate_payment_link(request: GenerateLinkRequest):
                     country=request.country,
                 )
             else:
-                raise HTTPException(status_code=400, detail="plan_type 必须为 plus 或 team")
+                raise HTTPException(status_code=400, detail="plan_type phải là plus hoặc team")
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             logger.error(f"生成支付链接失败: {e}")
-            raise HTTPException(status_code=500, detail=f"生成链接失败: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Tạo liên kết thất bại: {str(e)}")
 
     opened = False
     if request.auto_open and link:
@@ -105,7 +105,7 @@ def generate_payment_link(request: GenerateLinkRequest):
 def open_browser_incognito(request: OpenIncognitoRequest):
     """后端以无痕模式打开指定 URL，可注入账号 cookie"""
     if not request.url:
-        raise HTTPException(status_code=400, detail="URL 不能为空")
+        raise HTTPException(status_code=400, detail="URL không được để trống")
 
     cookies_str = None
     if request.account_id:
@@ -116,8 +116,8 @@ def open_browser_incognito(request: OpenIncognitoRequest):
 
     success = open_url_incognito(request.url, cookies_str)
     if success:
-        return {"success": True, "message": "已在无痕模式打开浏览器"}
-    return {"success": False, "message": "未找到可用的浏览器，请手动复制链接"}
+        return {"success": True, "message": "Đã mở trình duyệt ở chế độ ẩn danh"}
+    return {"success": False, "message": "Không tìm thấy trình duyệt khả dụng, vui lòng sao chép liên kết thủ công"}
 
 
 # ============== 订阅状态 ==============
@@ -139,7 +139,7 @@ def batch_check_subscription(request: BatchCheckSubscriptionRequest):
             if not account:
                 results["failed_count"] += 1
                 results["details"].append(
-                    {"id": account_id, "email": None, "success": False, "error": "账号不存在"}
+                    {"id": account_id, "email": None, "success": False, "error": "Không tìm thấy tài khoản"}
                 )
                 continue
 
@@ -166,12 +166,12 @@ def mark_subscription(account_id: int, request: MarkSubscriptionRequest):
     """手动标记账号订阅类型"""
     allowed = ("free", "plus", "team")
     if request.subscription_type not in allowed:
-        raise HTTPException(status_code=400, detail=f"subscription_type 必须为 {allowed}")
+        raise HTTPException(status_code=400, detail=f"subscription_type phải là {allowed}")
 
     with get_db() as db:
         account = db.query(Account).filter(Account.id == account_id).first()
         if not account:
-            raise HTTPException(status_code=404, detail="账号不存在")
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
 
         account.subscription_type = None if request.subscription_type == "free" else request.subscription_type
         account.subscription_at = datetime.utcnow() if request.subscription_type != "free" else None

@@ -12,8 +12,8 @@ let accountsPollingInterval = null;
 let isBatchMode = false;
 let isOutlookBatchMode = false;
 let outlookAccounts = [];
-let taskCompleted = false;  // 标记任务是否已完成
-let batchCompleted = false;  // 标记批量任务是否已完成
+let taskCompleted = false;  // 标记任务是否Đã hoàn tất
+let batchCompleted = false;  // 标记批量任务是否Đã hoàn tất
 let taskFinalStatus = null;  // 保存任务的最终状态
 let batchFinalStatus = null;  // 保存批量任务的最终状态
 let displayedLogs = new Set();  // 用于日志去重
@@ -130,10 +130,10 @@ async function loadServiceSelect(apiPath, container, checkbox, selectGroup) {
 
     if (!services || services.length === 0) {
         checkbox.disabled = true;
-        checkbox.title = '请先在设置中添加对应服务';
+        checkbox.title = 'Vui lòng thêm dịch vụ tương ứng trong phần cài đặt trước';
         const label = checkbox.closest('label');
         if (label) label.style.opacity = '0.5';
-        container.innerHTML = '<div class="msd-empty">暂无可用服务</div>';
+        container.innerHTML = '<div class="msd-empty">Chưa có dịch vụ khả dụng</div>';
     } else {
         const items = services.map(s =>
             `<label class="msd-item">
@@ -144,7 +144,7 @@ async function loadServiceSelect(apiPath, container, checkbox, selectGroup) {
         container.innerHTML = `
             <div class="msd-dropdown" id="${container.id}-dd">
                 <div class="msd-trigger" onclick="toggleMsd('${container.id}-dd')">
-                    <span class="msd-label">全部 (${services.length})</span>
+                    <span class="msd-label">Tất cả (${services.length})</span>
                     <span class="msd-arrow">▼</span>
                 </div>
                 <div class="msd-list">${items}</div>
@@ -178,8 +178,8 @@ function updateMsdLabel(ddId) {
     const checked = dd.querySelectorAll('.msd-item input:checked');
     const label = dd.querySelector('.msd-label');
     if (!label) return;
-    if (checked.length === 0) label.textContent = '未选择';
-    else if (checked.length === all.length) label.textContent = `全部 (${all.length})`;
+    if (checked.length === 0) label.textContent = 'Chưa chọn';
+    else if (checked.length === all.length) label.textContent = `Tất cả (${all.length})`;
     else label.textContent = Array.from(checked).map(c => c.nextElementSibling.textContent).join(', ');
 }
 
@@ -205,14 +205,14 @@ function initEventListeners() {
 
     // 清空日志
     elements.clearLogBtn.addEventListener('click', () => {
-        elements.consoleLog.innerHTML = '<div class="log-line info">[系统] 日志已清空</div>';
+        elements.consoleLog.innerHTML = '<div class="log-line info">[Hệ thống] Nhật ký đã được xóa</div>';
         displayedLogs.clear();  // 清空日志去重集合
     });
 
     // 刷新账号列表
     elements.refreshAccountsBtn.addEventListener('click', () => {
         loadRecentAccounts();
-        toast.info('已刷新');
+        toast.info('Đã làm mới');
     });
 
     // 并发模式切换
@@ -233,10 +233,10 @@ async function loadAvailableServices() {
         // 更新邮箱服务选择框
         updateEmailServiceOptions();
 
-        addLog('info', '[系统] 邮箱服务列表已加载');
+        addLog('info', '[Hệ thống] Danh sách dịch vụ email đã được tải');
     } catch (error) {
-        console.error('加载邮箱服务列表失败:', error);
-        addLog('warning', '[警告] 加载邮箱服务列表失败');
+        console.error('Tải danh sách dịch vụ email lỗi:', error);
+        addLog('warning', '[Cảnh báo] Tải danh sách dịch vụ email thất bại');
     }
 }
 
@@ -248,7 +248,7 @@ function updateEmailServiceOptions() {
     // Tempmail
     if (availableServices.tempmail.available) {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = '🌐 临时邮箱';
+        optgroup.label = '🌐 Email tạm thời';
 
         availableServices.tempmail.services.forEach(service => {
             const option = document.createElement('option');
@@ -264,7 +264,7 @@ function updateEmailServiceOptions() {
     // Outlook
     if (availableServices.outlook.available) {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = `📧 Outlook (${availableServices.outlook.count} 个账户)`;
+        optgroup.label = `📧 Outlook (${availableServices.outlook.count} tài khoản)`;
 
         availableServices.outlook.services.forEach(service => {
             const option = document.createElement('option');
@@ -280,16 +280,16 @@ function updateEmailServiceOptions() {
         // Outlook 批量注册选项
         const batchOption = document.createElement('option');
         batchOption.value = 'outlook_batch:all';
-        batchOption.textContent = `📋 Outlook 批量注册 (${availableServices.outlook.count} 个账户)`;
+        batchOption.textContent = `📋 Đăng ký hàng loạt bằng Outlook (${availableServices.outlook.count} tài khoản)`;
         batchOption.dataset.type = 'outlook_batch';
         optgroup.appendChild(batchOption);
     } else {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = '📧 Outlook (未配置)';
+        optgroup.label = '📧 Outlook (chưa cấu hình)';
 
         const option = document.createElement('option');
         option.value = '';
-        option.textContent = '请先在邮箱服务页面导入账户';
+        option.textContent = 'Vui lòng nhập tài khoản ở trang Dịch vụ email trước';
         option.disabled = true;
         optgroup.appendChild(option);
 
@@ -299,7 +299,7 @@ function updateEmailServiceOptions() {
     // 自定义域名
     if (availableServices.moe_mail.available) {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = `🔗 自定义域名 (${availableServices.moe_mail.count} 个服务)`;
+        optgroup.label = `🔗 Tên miền tùy chỉnh (${availableServices.moe_mail.count} dịch vụ)`;
 
         availableServices.moe_mail.services.forEach(service => {
             const option = document.createElement('option');
@@ -315,11 +315,11 @@ function updateEmailServiceOptions() {
         select.appendChild(optgroup);
     } else {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = '🔗 自定义域名 (未配置)';
+        optgroup.label = '🔗 Tên miền tùy chỉnh (chưa cấu hình)';
 
         const option = document.createElement('option');
         option.value = '';
-        option.textContent = '请先在邮箱服务页面添加服务';
+        option.textContent = 'Vui lòng thêm dịch vụ ở trang Dịch vụ email trước';
         option.disabled = true;
         optgroup.appendChild(option);
 
@@ -329,7 +329,7 @@ function updateEmailServiceOptions() {
     // Temp-Mail（自部署）
     if (availableServices.temp_mail && availableServices.temp_mail.available) {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = `📮 Temp-Mail 自部署 (${availableServices.temp_mail.count} 个服务)`;
+        optgroup.label = `📮 Temp-Mail tự host (${availableServices.temp_mail.count} dịch vụ)`;
 
         availableServices.temp_mail.services.forEach(service => {
             const option = document.createElement('option');
@@ -346,7 +346,7 @@ function updateEmailServiceOptions() {
     // DuckMail
     if (availableServices.duck_mail && availableServices.duck_mail.available) {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = `🦆 DuckMail (${availableServices.duck_mail.count} 个服务)`;
+        optgroup.label = `🦆 DuckMail (${availableServices.duck_mail.count} dịch vụ)`;
 
         availableServices.duck_mail.services.forEach(service => {
             const option = document.createElement('option');
@@ -363,7 +363,7 @@ function updateEmailServiceOptions() {
     // Freemail
     if (availableServices.freemail && availableServices.freemail.available) {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = `📧 Freemail (${availableServices.freemail.count} 个服务)`;
+        optgroup.label = `📧 Freemail (${availableServices.freemail.count} dịch vụ)`;
 
         availableServices.freemail.services.forEach(service => {
             const option = document.createElement('option');
@@ -392,7 +392,7 @@ function handleServiceChange(e) {
         elements.batchCountGroup.style.display = 'none';
         elements.batchOptions.style.display = 'none';
         loadOutlookAccounts();
-        addLog('info', '[系统] 已切换到 Outlook 批量注册模式');
+        addLog('info', '[Hệ thống] Đã chuyển sang chế độ đăng ký hàng loạt bằng Outlook');
         return;
     } else {
         isOutlookBatchMode = false;
@@ -404,27 +404,27 @@ function handleServiceChange(e) {
     if (type === 'outlook') {
         const service = availableServices.outlook.services.find(s => s.id == id);
         if (service) {
-            addLog('info', `[系统] 已选择 Outlook 账户: ${service.name}`);
+            addLog('info', `[Hệ thống] Đã chọn tài khoản Outlook: ${service.name}`);
         }
     } else if (type === 'moe_mail') {
         const service = availableServices.moe_mail.services.find(s => s.id == id);
         if (service) {
-            addLog('info', `[系统] 已选择自定义域名服务: ${service.name}`);
+            addLog('info', `[Hệ thống] Đã chọn dịch vụ tên miền tùy chỉnh: ${service.name}`);
         }
     } else if (type === 'temp_mail') {
         const service = availableServices.temp_mail.services.find(s => s.id == id);
         if (service) {
-            addLog('info', `[系统] 已选择 Temp-Mail 自部署服务: ${service.name}`);
+            addLog('info', `[Hệ thống] Đã chọn dịch vụ Temp-Mail tự host: ${service.name}`);
         }
     } else if (type === 'duck_mail') {
         const service = availableServices.duck_mail.services.find(s => s.id == id);
         if (service) {
-            addLog('info', `[系统] 已选择 DuckMail 服务: ${service.name}`);
+            addLog('info', `[Hệ thống] Đã chọn dịch vụ DuckMail: ${service.name}`);
         }
     } else if (type === 'freemail') {
         const service = availableServices.freemail.services.find(s => s.id == id);
         if (service) {
-            addLog('info', `[系统] 已选择 Freemail 服务: ${service.name}`);
+            addLog('info', `[Hệ thống] Đã chọn dịch vụ Freemail: ${service.name}`);
         }
     }
 }
@@ -442,10 +442,10 @@ function handleModeChange(e) {
 function handleConcurrencyModeChange(selectEl, hintEl, intervalGroupEl) {
     const mode = selectEl.value;
     if (mode === 'parallel') {
-        hintEl.textContent = '所有任务分成 N 个并发批次同时执行';
+        hintEl.textContent = 'Tất cả tác vụ được chia thành N lô chạy đồng thời';
         intervalGroupEl.style.display = 'none';
     } else {
-        hintEl.textContent = '同时最多运行 N 个任务，每隔 interval 秒启动新任务';
+        hintEl.textContent = 'Chạy tối đa N tác vụ cùng lúc, khởi động tác vụ mới sau mỗi khoảng interval giây';
         intervalGroupEl.style.display = 'block';
     }
 }
@@ -456,7 +456,7 @@ async function handleStartRegistration(e) {
 
     const selectedValue = elements.emailService.value;
     if (!selectedValue) {
-        toast.error('请选择一个邮箱服务');
+        toast.error('Vui lòng chọn một dịch vụ email');
         return;
     }
 
@@ -508,7 +508,7 @@ async function handleSingleRegistration(requestData) {
     displayedLogs.clear();  // 清空日志去重集合
     toastShown = false;  // 重置 toast 标志
 
-    addLog('info', '[系统] 正在启动注册任务...');
+    addLog('info', '[Hệ thống] Đang khởi chạy tác vụ đăng ký...');
 
     try {
         const data = await api.post('/registration/start', requestData);
@@ -517,7 +517,7 @@ async function handleSingleRegistration(requestData) {
         activeTaskUuid = data.task_uuid;  // 保存用于重连
         // 持久化到 sessionStorage，跨页面导航后可恢复
         sessionStorage.setItem('activeTask', JSON.stringify({ task_uuid: data.task_uuid, mode: 'single' }));
-        addLog('info', `[系统] 任务已创建: ${data.task_uuid}`);
+        addLog('info', `[Hệ thống] Tác vụ đã được tạo: ${data.task_uuid}`);
         showTaskStatus(data);
         updateTaskStatus('running');
 
@@ -525,7 +525,7 @@ async function handleSingleRegistration(requestData) {
         connectWebSocket(data.task_uuid);
 
     } catch (error) {
-        addLog('error', `[错误] 启动失败: ${error.message}`);
+        addLog('error', `[Lỗi] Khởi chạy thất bại: ${error.message}`);
         toast.error(error.message);
         resetButtons();
     }
@@ -543,7 +543,7 @@ function connectWebSocket(taskUuid) {
         webSocket = new WebSocket(wsUrl);
 
         webSocket.onopen = () => {
-            console.log('WebSocket 连接成功');
+            console.log('Kết nối WebSocket thành công');
             useWebSocket = true;
             // 停止轮询（如果有）
             stopLogPolling();
@@ -582,15 +582,15 @@ function connectWebSocket(taskUuid) {
                     if (!toastShown) {
                         toastShown = true;
                         if (data.status === 'completed') {
-                            addLog('success', '[成功] 注册成功！');
-                            toast.success('注册成功！');
+                            addLog('success', '[Thành công] Đăng ký thành công!');
+                            toast.success('Đăng ký thành công!');
                             // 刷新账号列表
                             loadRecentAccounts();
                         } else if (data.status === 'failed') {
-                            addLog('error', '[错误] 注册失败');
-                            toast.error('注册失败');
+                            addLog('error', '[Lỗi] Đăng ký thất bại');
+                            toast.error('Đăng ký thất bại');
                         } else if (data.status === 'cancelled' || data.status === 'cancelling') {
-                            addLog('warning', '[警告] 任务已取消');
+                            addLog('warning', '[Cảnh báo] Tác vụ đã bị hủy');
                         }
                     }
                 }
@@ -600,23 +600,23 @@ function connectWebSocket(taskUuid) {
         };
 
         webSocket.onclose = (event) => {
-            console.log('WebSocket 连接关闭:', event.code);
+            console.log('Kết nối WebSocket đã đóng:', event.code);
             stopWebSocketHeartbeat();
 
             // 只有在任务未完成且最终状态不是完成状态时才切换到轮询
             // 使用 taskFinalStatus 而不是 currentTask.status，因为 currentTask 可能已被重置
             const shouldPoll = !taskCompleted &&
-                               taskFinalStatus === null;  // 如果 taskFinalStatus 有值，说明任务已完成
+                               taskFinalStatus === null;  // 如果 taskFinalStatus 有值，说明任务Đã hoàn tất
 
             if (shouldPoll && currentTask) {
-                console.log('切换到轮询模式');
+                console.log('Chuyển sang chế độ thăm dò');
                 useWebSocket = false;
                 startLogPolling(currentTask.task_uuid);
             }
         };
 
         webSocket.onerror = (error) => {
-            console.error('WebSocket 错误:', error);
+            console.error('Lỗi WebSocket:', error);
             // 切换到轮询
             useWebSocket = false;
             stopWebSocketHeartbeat();
@@ -624,7 +624,7 @@ function connectWebSocket(taskUuid) {
         };
 
     } catch (error) {
-        console.error('WebSocket 连接失败:', error);
+        console.error('Lỗi kết nối WebSocket:', error);
         useWebSocket = false;
         startLogPolling(taskUuid);
     }
@@ -684,7 +684,7 @@ async function handleBatchRegistration(requestData) {
     requestData.concurrency = Math.min(50, Math.max(1, concurrency));
     requestData.mode = mode;
 
-    addLog('info', `[系统] 正在启动批量注册任务 (数量: ${count})...`);
+    addLog('info', `[Hệ thống] Đang khởi chạy tác vụ đăng ký hàng loạt (số lượng: ${count})...`);
 
     try {
         const data = await api.post('/registration/batch', requestData);
@@ -693,15 +693,15 @@ async function handleBatchRegistration(requestData) {
         activeBatchId = data.batch_id;  // 保存用于重连
         // 持久化到 sessionStorage，跨页面导航后可恢复
         sessionStorage.setItem('activeTask', JSON.stringify({ batch_id: data.batch_id, mode: 'batch', total: data.count }));
-        addLog('info', `[系统] 批量任务已创建: ${data.batch_id}`);
-        addLog('info', `[系统] 共 ${data.count} 个任务已加入队列`);
+        addLog('info', `[Hệ thống] Tác vụ hàng loạt đã được tạo: ${data.batch_id}`);
+        addLog('info', `[Hệ thống] Tổng cộng ${data.count} tác vụ đã vào hàng chờ`);
         showBatchStatus(data);
 
         // 优先使用 WebSocket
         connectBatchWebSocket(data.batch_id);
 
     } catch (error) {
-        addLog('error', `[错误] 启动失败: ${error.message}`);
+        addLog('error', `[Lỗi] Khởi chạy thất bại: ${error.message}`);
         toast.error(error.message);
         resetButtons();
     }
@@ -711,7 +711,7 @@ async function handleBatchRegistration(requestData) {
 async function handleCancelTask() {
     // 禁用取消按钮，防止重复点击
     elements.cancelBtn.disabled = true;
-    addLog('info', '[系统] 正在提交取消请求...');
+    addLog('info', '[Hệ thống] Đang gửi yêu cầu hủy...');
 
     try {
         // 批量任务取消（包括普通批量模式和 Outlook 批量模式）
@@ -719,8 +719,8 @@ async function handleCancelTask() {
             // 优先通过 WebSocket 取消
             if (batchWebSocket && batchWebSocket.readyState === WebSocket.OPEN) {
                 batchWebSocket.send(JSON.stringify({ type: 'cancel' }));
-                addLog('warning', '[警告] 批量任务取消请求已提交');
-                toast.info('任务取消请求已提交');
+                addLog('warning', '[Cảnh báo] Yêu cầu hủy tác vụ hàng loạt đã được gửi');
+                toast.info('Yêu cầu hủy tác vụ đã được gửi');
             } else {
                 // 降级到 REST API
                 const endpoint = isOutlookBatchMode
@@ -728,8 +728,8 @@ async function handleCancelTask() {
                     : `/registration/batch/${currentBatch.batch_id}/cancel`;
 
                 await api.post(endpoint);
-                addLog('warning', '[警告] 批量任务取消请求已提交');
-                toast.info('任务取消请求已提交');
+                addLog('warning', '[Cảnh báo] Yêu cầu hủy tác vụ hàng loạt đã được gửi');
+                toast.info('Yêu cầu hủy tác vụ đã được gửi');
                 stopBatchPolling();
                 resetButtons();
             }
@@ -739,25 +739,25 @@ async function handleCancelTask() {
             // 优先通过 WebSocket 取消
             if (webSocket && webSocket.readyState === WebSocket.OPEN) {
                 webSocket.send(JSON.stringify({ type: 'cancel' }));
-                addLog('warning', '[警告] 任务取消请求已提交');
-                toast.info('任务取消请求已提交');
+                addLog('warning', '[Cảnh báo] Yêu cầu hủy tác vụ đã được gửi');
+                toast.info('Yêu cầu hủy tác vụ đã được gửi');
             } else {
                 // 降级到 REST API
                 await api.post(`/registration/tasks/${currentTask.task_uuid}/cancel`);
-                addLog('warning', '[警告] 任务已取消');
-                toast.info('任务已取消');
+                addLog('warning', '[Cảnh báo] Tác vụ đã bị hủy');
+                toast.info('Tác vụ đã bị hủy');
                 stopLogPolling();
                 resetButtons();
             }
         }
         // 没有活动任务
         else {
-            addLog('warning', '[警告] 没有活动的任务可以取消');
-            toast.warning('没有活动的任务');
+            addLog('warning', '[Cảnh báo] Không có tác vụ đang hoạt động để hủy');
+            toast.warning('Không có tác vụ đang hoạt động');
             resetButtons();
         }
     } catch (error) {
-        addLog('error', `[错误] 取消失败: ${error.message}`);
+        addLog('error', `[Lỗi] Hủy thất bại: ${error.message}`);
         toast.error(error.message);
         // 恢复取消按钮，允许重试
         elements.cancelBtn.disabled = false;
@@ -801,20 +801,20 @@ function startLogPolling(taskUuid) {
                 if (!toastShown) {
                     toastShown = true;
                     if (data.status === 'completed') {
-                        addLog('success', '[成功] 注册成功！');
-                        toast.success('注册成功！');
+                        addLog('success', '[Thành công] Đăng ký thành công!');
+                        toast.success('Đăng ký thành công!');
                         // 刷新账号列表
                         loadRecentAccounts();
                     } else if (data.status === 'failed') {
-                        addLog('error', '[错误] 注册失败');
-                        toast.error('注册失败');
+                        addLog('error', '[Lỗi] Đăng ký thất bại');
+                        toast.error('Đăng ký thất bại');
                     } else if (data.status === 'cancelled') {
-                        addLog('warning', '[警告] 任务已取消');
+                        addLog('warning', '[Cảnh báo] Tác vụ đã bị hủy');
                     }
                 }
             }
         } catch (error) {
-            console.error('轮询日志失败:', error);
+            console.error('Lỗi thăm dò nhật ký:', error);
         }
     }, 1000);
 }
@@ -842,18 +842,18 @@ function startBatchPolling(batchId) {
                 // 只显示一次 toast
                 if (!toastShown) {
                     toastShown = true;
-                    addLog('info', `[完成] 批量任务完成！成功: ${data.success}, 失败: ${data.failed}`);
+                    addLog('info', `[Hoàn tất] Tác vụ hàng loạt hoàn tất! Thành công: ${data.success}, Thất bại: ${data.failed}`);
                     if (data.success > 0) {
-                        toast.success(`批量注册完成，成功 ${data.success} 个`);
+                        toast.success(`Đăng ký hàng loạt hoàn tất, thành công ${data.success} tài khoản`);
                         // 刷新账号列表
                         loadRecentAccounts();
                     } else {
-                        toast.warning('批量注册完成，但没有成功注册任何账号');
+                        toast.warning('Đăng ký hàng loạt đã hoàn tất nhưng không có tài khoản nào đăng ký thành công');
                     }
                 }
             }
         } catch (error) {
-            console.error('轮询批量状态失败:', error);
+            console.error('Lỗi thăm dò trạng thái hàng loạt:', error);
         }
     }, 2000);
 }
@@ -879,11 +879,11 @@ function showTaskStatus(task) {
 // 更新任务状态
 function updateTaskStatus(status) {
     const statusInfo = {
-        pending: { text: '等待中', class: 'pending' },
-        running: { text: '运行中', class: 'running' },
-        completed: { text: '已完成', class: 'completed' },
-        failed: { text: '失败', class: 'failed' },
-        cancelled: { text: '已取消', class: 'disabled' }
+        pending: { text: 'Đang chờ', class: 'pending' },
+        running: { text: 'Đang chạy', class: 'running' },
+        completed: { text: 'Đã hoàn tất', class: 'completed' },
+        failed: { text: 'Lỗi', class: 'failed' },
+        cancelled: { text: 'Đã hủy', class: 'disabled' }
     };
 
     const info = statusInfo[status] || { text: status, class: '' };
@@ -925,10 +925,10 @@ function updateBatchProgress(data) {
         const lastFailed = parseInt(elements.batchFailed.dataset.last || '0');
 
         if (data.success > lastSuccess) {
-            addLog('success', `[成功] 第 ${data.success} 个账号注册成功`);
+            addLog('success', `[Thành công] ${data.success} tài khoản đăng ký thành công`);
         }
         if (data.failed > lastFailed) {
-            addLog('error', `[失败] 第 ${data.failed} 个账号注册失败`);
+            addLog('error', `[Lỗi] ${data.failed} tài khoản đăng ký thất bại`);
         }
 
         elements.batchSuccess.dataset.last = data.success;
@@ -947,7 +947,7 @@ async function loadRecentAccounts() {
                     <td colspan="5">
                         <div class="empty-state" style="padding: var(--spacing-md);">
                             <div class="empty-state-icon">📭</div>
-                            <div class="empty-state-title">暂无已注册账号</div>
+                            <div class="empty-state-title">Chưa có tài khoản nào đã đăng ký</div>
                         </div>
                     </td>
                 </tr>
@@ -961,14 +961,14 @@ async function loadRecentAccounts() {
                 <td>
                     <span style="display:inline-flex;align-items:center;gap:4px;">
                         <span title="${escapeHtml(account.email)}">${escapeHtml(account.email)}</span>
-                        <button class="btn-copy-icon copy-email-btn" data-email="${escapeHtml(account.email)}" title="复制邮箱">📋</button>
+                        <button class="btn-copy-icon copy-email-btn" data-email="${escapeHtml(account.email)}" title="Sao chép email">📋</button>
                     </span>
                 </td>
                 <td class="password-cell">
                     ${account.password
                         ? `<span style="display:inline-flex;align-items:center;gap:4px;">
-                            <span class="password-hidden" title="点击查看">${escapeHtml(account.password.substring(0, 8))}...</span>
-                            <button class="btn-copy-icon copy-pwd-btn" data-pwd="${escapeHtml(account.password)}" title="复制密码">📋</button>
+                            <span class="password-hidden" title="Nhấn để xem">${escapeHtml(account.password.substring(0, 8))}...</span>
+                            <button class="btn-copy-icon copy-pwd-btn" data-pwd="${escapeHtml(account.password)}" title="Sao chép mật khẩu">📋</button>
                            </span>`
                         : '-'}
                 </td>
@@ -987,7 +987,7 @@ async function loadRecentAccounts() {
         });
 
     } catch (error) {
-        console.error('加载账号列表失败:', error);
+        console.error('Tải danh sách tài khoản lỗi:', error);
     }
 }
 
@@ -1043,13 +1043,13 @@ function getLogType(log) {
     if (typeof log !== 'string') return 'info';
 
     const lowerLog = log.toLowerCase();
-    if (lowerLog.includes('error') || lowerLog.includes('失败') || lowerLog.includes('错误')) {
+    if (lowerLog.includes('error') || lowerLog.includes('Lỗi') || lowerLog.includes('lỗi')) {
         return 'error';
     }
-    if (lowerLog.includes('warning') || lowerLog.includes('警告')) {
+    if (lowerLog.includes('warning') || lowerLog.includes('cảnh báo')) {
         return 'warning';
     }
-    if (lowerLog.includes('success') || lowerLog.includes('成功') || lowerLog.includes('完成')) {
+    if (lowerLog.includes('success') || lowerLog.includes('thành công') || lowerLog.includes('hoàn tất')) {
         return 'success';
     }
     return 'info';
@@ -1093,26 +1093,26 @@ function escapeHtml(text) {
 // 加载 Outlook 账户列表
 async function loadOutlookAccounts() {
     try {
-        elements.outlookAccountsContainer.innerHTML = '<div class="loading-placeholder" style="text-align: center; padding: var(--spacing-md); color: var(--text-muted);">加载中...</div>';
+        elements.outlookAccountsContainer.innerHTML = '<div class="loading-placeholder" style="text-align: center; padding: var(--spacing-md); color: var(--text-muted);">Đang tải...</div>';
 
         const data = await api.get('/registration/outlook-accounts');
         outlookAccounts = data.accounts || [];
 
         renderOutlookAccountsList();
 
-        addLog('info', `[系统] 已加载 ${data.total} 个 Outlook 账户 (已注册: ${data.registered_count}, 未注册: ${data.unregistered_count})`);
+        addLog('info', `[Hệ thống] Đã tải ${data.total} tài khoản Outlook (đã đăng ký: ${data.registered_count}, chưa đăng ký: ${data.unregistered_count})`);
 
     } catch (error) {
-        console.error('加载 Outlook 账户列表失败:', error);
-        elements.outlookAccountsContainer.innerHTML = `<div style="text-align: center; padding: var(--spacing-md); color: var(--text-muted);">加载失败: ${error.message}</div>`;
-        addLog('error', `[错误] 加载 Outlook 账户列表失败: ${error.message}`);
+        console.error('Tải danh sách tài khoản Outlook lỗi:', error);
+        elements.outlookAccountsContainer.innerHTML = `<div style="text-align: center; padding: var(--spacing-md); color: var(--text-muted);">Tải thất bại: ${error.message}</div>`;
+        addLog('error', `[Lỗi] Tải danh sách tài khoản Outlook thất bại: ${error.message}`);
     }
 }
 
 // 渲染 Outlook 账户列表
 function renderOutlookAccountsList() {
     if (outlookAccounts.length === 0) {
-        elements.outlookAccountsContainer.innerHTML = '<div style="text-align: center; padding: var(--spacing-md); color: var(--text-muted);">没有可用的 Outlook 账户</div>';
+        elements.outlookAccountsContainer.innerHTML = '<div style="text-align: center; padding: var(--spacing-md); color: var(--text-muted);">Không có tài khoản Outlook khả dụng</div>';
         return;
     }
 
@@ -1123,8 +1123,8 @@ function renderOutlookAccountsList() {
                 <div style="font-weight: 500;">${escapeHtml(account.email)}</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">
                     ${account.is_registered
-                        ? `<span style="color: var(--success-color);">✓ 已注册</span>`
-                        : '<span style="color: var(--primary-color);">未注册</span>'
+                        ? `<span style="color: var(--success-color);">✓ Đã đăng ký</span>`
+                        : '<span style="color: var(--primary-color);">Chưa đăng ký</span>'
                     }
                     ${account.has_oauth ? ' | OAuth' : ''}
                 </div>
@@ -1141,7 +1141,7 @@ function selectAllOutlookAccounts() {
     checkboxes.forEach(cb => cb.checked = true);
 }
 
-// 只选未注册
+// 只选Chưa đăng ký
 function selectUnregisteredOutlook() {
     const items = document.querySelectorAll('.outlook-account-item');
     items.forEach(item => {
@@ -1172,7 +1172,7 @@ async function handleOutlookBatchRegistration() {
     });
 
     if (selectedIds.length === 0) {
-        toast.error('请选择至少一个 Outlook 账户');
+        toast.error('Vui lòng chọn ít nhất một tài khoản Outlook');
         return;
     }
 
@@ -1206,14 +1206,14 @@ async function handleOutlookBatchRegistration() {
         newapi_service_ids: elements.autoUploadNewapi && elements.autoUploadNewapi.checked ? getSelectedServiceIds(elements.newapiServiceSelect) : [],
     };
 
-    addLog('info', `[系统] 正在启动 Outlook 批量注册 (${selectedIds.length} 个账户)...`);
+    addLog('info', `[Hệ thống] Đang khởi chạy đăng ký hàng loạt bằng Outlook (${selectedIds.length} tài khoản)...`);
 
     try {
         const data = await api.post('/registration/outlook-batch', requestData);
 
         if (data.to_register === 0) {
-            addLog('warning', '[警告] 所有选中的邮箱都已注册，无需重复注册');
-            toast.warning('所有选中的邮箱都已注册');
+            addLog('warning', '[Cảnh báo] Tất cả email đã chọn đều đã được đăng ký, không cần đăng ký lại');
+            toast.warning('Tất cả email đã chọn đều đã được đăng ký');
             resetButtons();
             return;
         }
@@ -1222,8 +1222,8 @@ async function handleOutlookBatchRegistration() {
         activeBatchId = data.batch_id;  // 保存用于重连
         // 持久化到 sessionStorage，跨页面导航后可恢复
         sessionStorage.setItem('activeTask', JSON.stringify({ batch_id: data.batch_id, mode: isOutlookBatchMode ? 'outlook_batch' : 'batch', total: data.to_register }));
-        addLog('info', `[系统] 批量任务已创建: ${data.batch_id}`);
-        addLog('info', `[系统] 总数: ${data.total}, 跳过已注册: ${data.skipped}, 待注册: ${data.to_register}`);
+        addLog('info', `[Hệ thống] Tác vụ hàng loạt đã được tạo: ${data.batch_id}`);
+        addLog('info', `[Hệ thống] Tổng số: ${data.total}, | Bỏ qua đã đăng ký: ${data.skipped}, | Chờ đăng ký: ${data.to_register}`);
 
         // 初始化批量状态显示
         showBatchStatus({ count: data.to_register });
@@ -1232,7 +1232,7 @@ async function handleOutlookBatchRegistration() {
         connectBatchWebSocket(data.batch_id);
 
     } catch (error) {
-        addLog('error', `[错误] 启动失败: ${error.message}`);
+        addLog('error', `[Lỗi] Khởi chạy thất bại: ${error.message}`);
         toast.error(error.message);
         resetButtons();
     }
@@ -1249,7 +1249,7 @@ function connectBatchWebSocket(batchId) {
         batchWebSocket = new WebSocket(wsUrl);
 
         batchWebSocket.onopen = () => {
-            console.log('批量任务 WebSocket 连接成功');
+            console.log('Kết nối WebSocket tác vụ hàng loạt thành công');
             // 停止轮询（如果有）
             stopBatchPolling();
             // 开始心跳
@@ -1289,18 +1289,18 @@ function connectBatchWebSocket(batchId) {
                     if (!toastShown) {
                         toastShown = true;
                         if (data.status === 'completed') {
-                            addLog('success', `[完成] Outlook 批量任务完成！成功: ${data.success}, 失败: ${data.failed}, 跳过: ${data.skipped || 0}`);
+                            addLog('success', `[Hoàn tất] Tác vụ Outlook hàng loạt đã hoàn tất! Thành công: ${data.success}, Thất bại: ${data.failed}, | Bỏ qua: ${data.skipped || 0}`);
                             if (data.success > 0) {
-                                toast.success(`Outlook 批量注册完成，成功 ${data.success} 个`);
+                                toast.success(`Outlook Đăng ký hàng loạt hoàn tất, thành công ${data.success} tài khoản`);
                                 loadRecentAccounts();
                             } else {
-                                toast.warning('Outlook 批量注册完成，但没有成功注册任何账号');
+                                toast.warning('Outlook Đăng ký hàng loạt đã hoàn tất nhưng không có tài khoản nào đăng ký thành công');
                             }
                         } else if (data.status === 'failed') {
-                            addLog('error', '[错误] 批量任务执行失败');
-                            toast.error('批量任务执行失败');
+                            addLog('error', '[Lỗi] Tác vụ hàng loạt thực thi thất bại');
+                            toast.error('Thực thi tác vụ hàng loạt thất bại');
                         } else if (data.status === 'cancelled' || data.status === 'cancelling') {
-                            addLog('warning', '[警告] 批量任务已取消');
+                            addLog('warning', '[Cảnh báo] Tác vụ hàng loạt đã bị hủy');
                         }
                     }
                 }
@@ -1310,29 +1310,29 @@ function connectBatchWebSocket(batchId) {
         };
 
         batchWebSocket.onclose = (event) => {
-            console.log('批量任务 WebSocket 连接关闭:', event.code);
+            console.log('Kết nối WebSocket tác vụ hàng loạt đã đóng:', event.code);
             stopBatchWebSocketHeartbeat();
 
             // 只有在任务未完成且最终状态不是完成状态时才切换到轮询
             // 使用 batchFinalStatus 而不是 currentBatch.status，因为 currentBatch 可能已被重置
             const shouldPoll = !batchCompleted &&
-                               batchFinalStatus === null;  // 如果 batchFinalStatus 有值，说明任务已完成
+                               batchFinalStatus === null;  // 如果 batchFinalStatus 有值，说明任务Đã hoàn tất
 
             if (shouldPoll && currentBatch) {
-                console.log('切换到轮询模式');
+                console.log('Chuyển sang chế độ thăm dò');
                 startCurrentBatchPolling(currentBatch.batch_id);
             }
         };
 
         batchWebSocket.onerror = (error) => {
-            console.error('批量任务 WebSocket 错误:', error);
+            console.error('Lỗi WebSocket tác vụ hàng loạt:', error);
             stopBatchWebSocketHeartbeat();
             // 切换到轮询
             startCurrentBatchPolling(batchId);
         };
 
     } catch (error) {
-        console.error('批量任务 WebSocket 连接失败:', error);
+        console.error('Lỗi kết nối WebSocket tác vụ hàng loạt:', error);
         startCurrentBatchPolling(batchId);
     }
 }
@@ -1413,17 +1413,17 @@ function startOutlookBatchPolling(batchId) {
                 // 只显示一次 toast
                 if (!toastShown) {
                     toastShown = true;
-                    addLog('info', `[完成] Outlook 批量任务完成！成功: ${data.success}, 失败: ${data.failed}, 跳过: ${data.skipped || 0}`);
+                    addLog('info', `[Hoàn tất] Tác vụ Outlook hàng loạt đã hoàn tất! Thành công: ${data.success}, Thất bại: ${data.failed}, | Bỏ qua: ${data.skipped || 0}`);
                     if (data.success > 0) {
-                        toast.success(`Outlook 批量注册完成，成功 ${data.success} 个`);
+                        toast.success(`Outlook Đăng ký hàng loạt hoàn tất, thành công ${data.success} tài khoản`);
                         loadRecentAccounts();
                     } else {
-                        toast.warning('Outlook 批量注册完成，但没有成功注册任何账号');
+                        toast.warning('Outlook Đăng ký hàng loạt đã hoàn tất nhưng không có tài khoản nào đăng ký thành công');
                     }
                 }
             }
         } catch (error) {
-            console.error('轮询 Outlook 批量状态失败:', error);
+            console.error('Lỗi thăm dò trạng thái Outlook hàng loạt:', error);
         }
     }, 2000);
 
@@ -1442,15 +1442,15 @@ function initVisibilityReconnect() {
 
         // 单任务重连
         if (activeTaskUuid && !taskCompleted && wsDisconnected) {
-            console.log('[重连] 页面重新可见，重连单任务 WebSocket:', activeTaskUuid);
-            addLog('info', '[系统] 页面重新激活，正在重连任务监控...');
+            console.log('[Kết nối lại] Trang hiển thị trở lại, kết nối lại WebSocket tác vụ đơn:', activeTaskUuid);
+            addLog('info', '[Hệ thống] Trang vừa hoạt động lại, đang kết nối lại giám sát tác vụ...');
             connectWebSocket(activeTaskUuid);
         }
 
         // 批量任务重连
         if (activeBatchId && !batchCompleted && batchWsDisconnected) {
-            console.log('[重连] 页面重新可见，重连批量任务 WebSocket:', activeBatchId);
-            addLog('info', '[系统] 页面重新激活，正在重连批量任务监控...');
+            console.log('[Kết nối lại] Trang hiển thị trở lại, kết nối lại WebSocket tác vụ hàng loạt:', activeBatchId);
+            addLog('info', '[Hệ thống] Trang vừa hoạt động lại, đang kết nối lại giám sát tác vụ hàng loạt...');
             connectBatchWebSocket(activeBatchId);
         }
     });
@@ -1490,7 +1490,7 @@ async function restoreActiveTask() {
             elements.cancelBtn.disabled = false;
             showTaskStatus(data);
             updateTaskStatus(data.status);
-            addLog('info', `[系统] 检测到进行中的任务，正在重连监控... (${task_uuid.substring(0, 8)})`);
+            addLog('info', `[Hệ thống] Phát hiện tác vụ đang chạy, đang kết nối lại giám sát... (${task_uuid.substring(0, 8)})`);
             connectWebSocket(task_uuid);
         } catch {
             sessionStorage.removeItem('activeTask');
@@ -1518,7 +1518,7 @@ async function restoreActiveTask() {
             elements.cancelBtn.disabled = false;
             showBatchStatus({ count: total || data.total });
             updateBatchProgress(data);
-            addLog('info', `[系统] 检测到进行中的批量任务，正在重连监控... (${batch_id.substring(0, 8)})`);
+            addLog('info', `[Hệ thống] Phát hiện tác vụ hàng loạt đang chạy, đang kết nối lại giám sát... (${batch_id.substring(0, 8)})`);
             connectBatchWebSocket(batch_id);
         } catch {
             sessionStorage.removeItem('activeTask');
