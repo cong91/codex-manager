@@ -55,6 +55,45 @@
         <!-- Outlook 管理 -->
         <div class="card">
           <div class="card-header">
+            <h3>📧 Danh sách tài khoản Outlook</h3>
+            <div style="display: flex; gap: 8px">
+              <button class="btn btn-primary btn-sm" id="add-outlook-btn">➕ Thêm tài khoản</button>
+              <button class="btn btn-danger btn-sm" id="batch-delete-outlook-btn" disabled>
+                🗑️ Xóa hàng loạt
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px"><input type="checkbox" id="select-all-outlook" /></th>
+                    <th>Email</th>
+                    <th style="width: 100px">Phương thức xác thực</th>
+                    <th style="width: 100px">Trạng thái</th>
+                    <th style="width: 80px">Ưu tiên</th>
+                    <th style="width: 160px">Dùng lần cuối</th>
+                    <th style="width: 140px">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="outlook-accounts-table">
+                  <tr>
+                    <td colspan="7">
+                      <div class="empty-state">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text" style="width: 80%"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
             <h3>📥 Nhập hàng loạt Outlook</h3>
             <button class="btn btn-ghost btn-sm" id="toggle-outlook-import">Mở rộng</button>
           </div>
@@ -236,6 +275,7 @@
                 <option value="tempmail">TempMail (Cloudflare Worker tự host)</option>
                 <option value="duckmail">DuckMail (DuckMail API)</option>
                 <option value="freemail">Freemail (Cloudflare Worker tự host)</option>
+                <option value="cloudmail">Cloud Mail (API công khai)</option>
                 <option value="imap">IMAP chuẩn (Gmail/QQ/163, v.v.)</option>
               </select>
             </div>
@@ -353,6 +393,25 @@
                   name="fm_domain"
                   placeholder="example.com"
                 />
+              </div>
+            </div>
+            <!-- Cloud Mail 字段 -->
+            <div id="add-cloudmail-fields" style="display: none">
+              <div class="form-group">
+                <label for="custom-cm-base-url">Địa chỉ website</label>
+                <input type="text" id="custom-cm-base-url" name="cm_base_url" placeholder="https://mail.example.com" />
+              </div>
+              <div class="form-group">
+                <label for="custom-cm-admin-email">Email quản trị</label>
+                <input type="email" id="custom-cm-admin-email" name="cm_admin_email" placeholder="admin@example.com" />
+              </div>
+              <div class="form-group">
+                <label for="custom-cm-admin-password">Mật khẩu quản trị</label>
+                <input type="password" id="custom-cm-admin-password" name="cm_admin_password" placeholder="Dùng để lấy public token" />
+              </div>
+              <div class="form-group">
+                <label for="custom-cm-domain">Tên miền mặc định</label>
+                <input type="text" id="custom-cm-domain" name="cm_domain" placeholder="mail.example.com" />
               </div>
             </div>
             <!-- IMAP 字段 -->
@@ -580,6 +639,26 @@
                 <input type="text" id="edit-fm-domain" name="fm_domain" placeholder="example.com" />
               </div>
             </div>
+            <!-- Cloud Mail 字段 -->
+            <div id="edit-cloudmail-fields" style="display: none">
+              <div class="form-group">
+                <label for="edit-cm-base-url">Địa chỉ website</label>
+                <input type="text" id="edit-cm-base-url" name="cm_base_url" placeholder="https://mail.example.com" />
+              </div>
+              <div class="form-group">
+                <label for="edit-cm-admin-email">Email quản trị</label>
+                <input type="email" id="edit-cm-admin-email" name="cm_admin_email" placeholder="admin@example.com" />
+              </div>
+              <div class="form-group">
+                <label for="edit-cm-admin-password">Mật khẩu quản trị</label>
+                <input type="password" id="edit-cm-admin-password" name="cm_admin_password" placeholder="Để trống để giữ nguyên giá trị hiện tại" />
+                <small style="color: var(--text-muted)">Để trống để giữ nguyên giá trị hiện tại</small>
+              </div>
+              <div class="form-group">
+                <label for="edit-cm-domain">Tên miền mặc định</label>
+                <input type="text" id="edit-cm-domain" name="cm_domain" placeholder="mail.example.com" />
+              </div>
+            </div>
             <!-- IMAP 字段 -->
             <div id="edit-imap-fields" style="display: none">
               <div class="form-group">
@@ -724,6 +803,44 @@
               <button type="button" class="btn btn-secondary" id="cancel-edit-outlook">Hủy</button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="outlook-import-modal">
+      <div class="modal-content" style="max-width: 560px">
+        <div class="modal-header">
+          <h3>📥 Thêm hàng loạt tài khoản Outlook</h3>
+          <button class="modal-close" id="close-outlook-import-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="import-info" style="margin-bottom: var(--spacing-md)">
+            <p><strong>Định dạng hỗ trợ:</strong></p>
+            <ul>
+              <li><code>email----mật_khẩu</code> (xác thực bằng mật khẩu)</li>
+              <li><code>email----mật_khẩu----client_id----refresh_token</code> (xác thực bằng XOAUTH2, khuyến nghị)</li>
+            </ul>
+            <p style="color: var(--text-muted); font-size: 0.875rem">Mỗi dòng là một tài khoản, dùng bốn dấu gạch nối (----) để phân tách trường. Các dòng bắt đầu bằng # sẽ bị bỏ qua.</p>
+          </div>
+          <div class="form-group">
+            <label for="outlook-import-data">Dữ liệu nhập hàng loạt</label>
+            <textarea id="outlook-import-data" rows="8" placeholder="example@outlook.com----password123&#10;test@outlook.com----password456----client_id----refresh_token"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label><input type="checkbox" id="outlook-import-enabled" checked /> Bật sau khi nhập</label>
+            </div>
+            <div class="form-group">
+              <label for="outlook-import-priority">Ưu tiên</label>
+              <input type="number" id="outlook-import-priority" value="0" min="0" />
+            </div>
+          </div>
+          <div id="import-result" style="display: none; margin-top: var(--spacing-md)"></div>
+        </div>
+        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end">
+          <button type="button" class="btn btn-primary" id="outlook-import-btn">📥 Bắt đầu nhập</button>
+          <button type="button" class="btn btn-secondary" id="clear-import-btn">Xóa</button>
+          <button type="button" class="btn btn-secondary" id="cancel-outlook-import-btn">Đóng</button>
         </div>
       </div>
     </div>

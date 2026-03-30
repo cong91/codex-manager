@@ -381,7 +381,7 @@ function updateEmailServiceOptions() {
     // Cloud Mail
     if (availableServices.cloud_mail && availableServices.cloud_mail.available) {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = `☁️ Cloud Mail (${availableServices.cloud_mail.count} 个服务)`;
+        optgroup.label = `☁️ Cloud Mail (${availableServices.cloud_mail.count} dịch vụ)`;
 
         availableServices.cloud_mail.services.forEach(service => {
             const option = document.createElement('option');

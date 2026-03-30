@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 事件监听
 function initEventListeners() {
-    // Outlook 导入 Mở rộng/Thu gọn
+    // Outlook 导入模态框
     const toggleImportBtn = document.getElementById('toggle-outlook-import');
     const importBody = document.getElementById('outlook-import-body');
     if (toggleImportBtn && importBody) {
@@ -106,6 +106,27 @@ function initEventListeners() {
             const isHidden = importBody.style.display === 'none';
             importBody.style.display = isHidden ? 'block' : 'none';
             toggleImportBtn.textContent = isHidden ? 'Thu gọn' : 'Mở rộng';
+        });
+    }
+
+    if (elements.addOutlookBtn && elements.outlookImportModal) {
+        elements.addOutlookBtn.addEventListener('click', () => {
+            elements.outlookImportData.value = '';
+            elements.importResult.style.display = 'none';
+            elements.outlookImportModal.classList.add('active');
+        });
+    }
+
+    const closeOutlookModal = () => {
+        if (elements.outlookImportModal) {
+            elements.outlookImportModal.classList.remove('active');
+        }
+    };
+    if (elements.closeOutlookImportModal) elements.closeOutlookImportModal.addEventListener('click', closeOutlookModal);
+    if (elements.cancelOutlookImportBtn) elements.cancelOutlookImportBtn.addEventListener('click', closeOutlookModal);
+    if (elements.outlookImportModal) {
+        elements.outlookImportModal.addEventListener('click', (e) => {
+            if (e.target === elements.outlookImportModal) closeOutlookModal();
         });
     }
 
