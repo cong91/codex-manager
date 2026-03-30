@@ -4,7 +4,7 @@
 
 // 状态
 let outlookServices = [];
-let customServices = [];  // 合并 moe_mail + temp_mail + duck_mail + freemail + imap_mail
+let customServices = [];  // 合并 moe_mail + temp_mail + duck_mail + freemail + cloud_mail + imap_mail
 let selectedOutlook = new Set();
 let selectedCustom = new Set();
 
@@ -16,9 +16,11 @@ const elements = {
     tempmailStatus: document.getElementById('tempmail-status'),
     totalEnabled: document.getElementById('total-enabled'),
 
-    // Outlook 导入
-    toggleOutlookImport: document.getElementById('toggle-outlook-import'),
-    outlookImportBody: document.getElementById('outlook-import-body'),
+    // Outlook 导入模态框
+    addOutlookBtn: document.getElementById('add-outlook-btn'),
+    outlookImportModal: document.getElementById('outlook-import-modal'),
+    closeOutlookImportModal: document.getElementById('close-outlook-import-modal'),
+    cancelOutlookImportBtn: document.getElementById('cancel-outlook-import-btn'),
     outlookImportData: document.getElementById('outlook-import-data'),
     outlookImportEnabled: document.getElementById('outlook-import-enabled'),
     outlookImportPriority: document.getElementById('outlook-import-priority'),
@@ -52,6 +54,7 @@ const elements = {
     addTempmailFields: document.getElementById('add-tempmail-fields'),
     addDuckmailFields: document.getElementById('add-duckmail-fields'),
     addFreemailFields: document.getElementById('add-freemail-fields'),
+    addCloudmailFields: document.getElementById('add-cloudmail-fields'),
     addImapFields: document.getElementById('add-imap-fields'),
 
     // Chỉnh sửa自定义域名模态框
@@ -63,6 +66,7 @@ const elements = {
     editTempmailFields: document.getElementById('edit-tempmail-fields'),
     editDuckmailFields: document.getElementById('edit-duckmail-fields'),
     editFreemailFields: document.getElementById('edit-freemail-fields'),
+    editCloudmailFields: document.getElementById('edit-cloudmail-fields'),
     editImapFields: document.getElementById('edit-imap-fields'),
     editCustomTypeBadge: document.getElementById('edit-custom-type-badge'),
     editCustomSubTypeHidden: document.getElementById('edit-custom-sub-type-hidden'),
@@ -77,8 +81,9 @@ const elements = {
 const CUSTOM_SUBTYPE_LABELS = {
     moemail: '🔗 MoeMail (API tên miền tùy chỉnh)',
     tempmail: '📮 TempMail (Cloudflare Worker tự host)',
-    duckmail: '🦆 DuckMail（DuckMail API）',
+    duckmail: '🦆 DuckMail (DuckMail API)',
     freemail: 'Freemail (Cloudflare Worker tự triển khai)',
+    cloudmail: '☁️ Cloud Mail (API công khai)',
     imap: '📧 Email IMAP (Gmail/QQ/163, v.v.)'
 };
 
@@ -93,12 +98,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 事件监听
 function initEventListeners() {
-    // Outlook 导入Mở rộng/Thu gọn
-    elements.toggleOutlookImport.addEventListener('click', () => {
-        const isHidden = elements.outlookImportBody.style.display === 'none';
-        elements.outlookImportBody.style.display = isHidden ? 'block' : 'none';
-        elements.toggleOutlookImport.textContent = isHidden ? 'Thu gọn' : 'Mở rộng';
-    });
+    // Outlook 导入 Mở rộng/Thu gọn
+    const toggleImportBtn = document.getElementById('toggle-outlook-import');
+    const importBody = document.getElementById('outlook-import-body');
+    if (toggleImportBtn && importBody) {
+        toggleImportBtn.addEventListener('click', () => {
+            const isHidden = importBody.style.display === 'none';
+            importBody.style.display = isHidden ? 'block' : 'none';
+            toggleImportBtn.textContent = isHidden ? 'Thu gọn' : 'Mở rộng';
+        });
+    }
 
     // Outlook 导入
     elements.outlookImportBtn.addEventListener('click', handleOutlookImport);
@@ -185,6 +194,7 @@ function switchAddSubType(subType) {
     elements.addTempmailFields.style.display = subType === 'tempmail' ? '' : 'none';
     elements.addDuckmailFields.style.display = subType === 'duckmail' ? '' : 'none';
     elements.addFreemailFields.style.display = subType === 'freemail' ? '' : 'none';
+    elements.addCloudmailFields.style.display = subType === 'cloudmail' ? '' : 'none';
     elements.addImapFields.style.display = subType === 'imap' ? '' : 'none';
 }
 
@@ -195,6 +205,7 @@ function switchEditSubType(subType) {
     elements.editTempmailFields.style.display = subType === 'tempmail' ? '' : 'none';
     elements.editDuckmailFields.style.display = subType === 'duckmail' ? '' : 'none';
     elements.editFreemailFields.style.display = subType === 'freemail' ? '' : 'none';
+    elements.editCloudmailFields.style.display = subType === 'cloudmail' ? '' : 'none';
     elements.editImapFields.style.display = subType === 'imap' ? '' : 'none';
     elements.editCustomTypeBadge.textContent = CUSTOM_SUBTYPE_LABELS[subType] || CUSTOM_SUBTYPE_LABELS.moemail;
 }
@@ -204,7 +215,7 @@ async function loadStats() {
     try {
         const data = await api.get('/email-services/stats');
         elements.outlookCount.textContent = data.outlook_count || 0;
-        elements.customCount.textContent = (data.custom_count || 0) + (data.temp_mail_count || 0) + (data.duck_mail_count || 0) + (data.freemail_count || 0) + (data.imap_mail_count || 0);
+        elements.customCount.textContent = (data.custom_count || 0) + (data.temp_mail_count || 0) + (data.duck_mail_count || 0) + (data.freemail_count || 0) + (data.cloud_mail_count || 0) + (data.imap_mail_count || 0);
         elements.tempmailStatus.textContent = data.tempmail_available ? 'Khả dụng' : 'Không khả dụng';
         elements.totalEnabled.textContent = data.enabled_count || 0;
     } catch (error) {
@@ -289,6 +300,9 @@ function getCustomServiceTypeBadge(subType) {
     if (subType === 'freemail') {
         return '<span class="status-badge" style="background-color:#9c27b0;color:white;">Freemail</span>';
     }
+    if (subType === 'cloudmail') {
+        return '<span class="status-badge" style="background-color:#1976d2;color:white;">Cloud Mail</span>';
+    }
     return '<span class="status-badge" style="background-color:#0288d1;color:white;">IMAP</span>';
 }
 
@@ -306,14 +320,15 @@ function getCustomServiceAddress(service) {
     return `${escapeHtml(baseUrl)}<div style="color: var(--text-muted); margin-top: 4px;">Tên miền mặc định: @${escapeHtml(domain)}</div>`;
 }
 
-// 加载自定义邮箱服务（moe_mail + temp_mail + duck_mail + freemail 合并）
+// 加载自定义邮箱服务（moe_mail + temp_mail + duck_mail + freemail + cloud_mail 合并）
 async function loadCustomServices() {
     try {
-        const [r1, r2, r3, r4, r5] = await Promise.all([
+        const [r1, r2, r3, r4, r5, r6] = await Promise.all([
             api.get('/email-services?service_type=moe_mail'),
             api.get('/email-services?service_type=temp_mail'),
             api.get('/email-services?service_type=duck_mail'),
             api.get('/email-services?service_type=freemail'),
+            api.get('/email-services?service_type=cloud_mail'),
             api.get('/email-services?service_type=imap_mail')
         ]);
         customServices = [
@@ -321,7 +336,8 @@ async function loadCustomServices() {
             ...(r2.services || []).map(s => ({ ...s, _subType: 'tempmail' })),
             ...(r3.services || []).map(s => ({ ...s, _subType: 'duckmail' })),
             ...(r4.services || []).map(s => ({ ...s, _subType: 'freemail' })),
-            ...(r5.services || []).map(s => ({ ...s, _subType: 'imap' }))
+            ...(r5.services || []).map(s => ({ ...s, _subType: 'cloudmail' })),
+            ...(r6.services || []).map(s => ({ ...s, _subType: 'imap' }))
         ];
 
         if (customServices.length === 0) {
@@ -465,6 +481,14 @@ async function handleAddCustom(e) {
             base_url: formData.get('fm_base_url'),
             admin_token: formData.get('fm_admin_token'),
             domain: formData.get('fm_domain')
+        };
+    } else if (subType === 'cloudmail') {
+        serviceType = 'cloud_mail';
+        config = {
+            base_url: formData.get('cm_base_url'),
+            admin_email: formData.get('cm_admin_email'),
+            admin_password: formData.get('cm_admin_password'),
+            default_domain: formData.get('cm_domain')
         };
     } else {
         serviceType = 'imap_mail';
@@ -617,6 +641,8 @@ async function editCustomService(id, subType) {
                     ? 'duckmail'
                     : service.service_type === 'freemail'
                         ? 'freemail'
+                        : service.service_type === 'cloud_mail'
+                            ? 'cloudmail'
                         : service.service_type === 'imap_mail'
                             ? 'imap'
                             : 'moemail'
@@ -650,6 +676,12 @@ async function editCustomService(id, subType) {
             document.getElementById('edit-fm-admin-token').value = '';
             document.getElementById('edit-fm-admin-token').placeholder = service.config?.admin_token ? 'Đã thiết lập, để trống để giữ nguyên' : 'Vui lòng nhập Admin Token';
             document.getElementById('edit-fm-domain').value = service.config?.domain || '';
+        } else if (resolvedSubType === 'cloudmail') {
+            document.getElementById('edit-cm-base-url').value = service.config?.base_url || '';
+            document.getElementById('edit-cm-admin-email').value = service.config?.admin_email || '';
+            document.getElementById('edit-cm-admin-password').value = '';
+            document.getElementById('edit-cm-admin-password').placeholder = service.config?.admin_password ? '已设置，留空保持不变' : '请输入管理员密码';
+            document.getElementById('edit-cm-domain').value = service.config?.default_domain || '';
         } else {
             document.getElementById('edit-imap-host').value = service.config?.host || '';
             document.getElementById('edit-imap-port').value = service.config?.port || 993;
@@ -703,6 +735,14 @@ async function handleEditCustom(e) {
         };
         const token = formData.get('fm_admin_token');
         if (token && token.trim()) config.admin_token = token.trim();
+    } else if (subType === 'cloudmail') {
+        config = {
+            base_url: formData.get('cm_base_url'),
+            admin_email: formData.get('cm_admin_email'),
+            default_domain: formData.get('cm_domain')
+        };
+        const pwd = formData.get('cm_admin_password');
+        if (pwd && pwd.trim()) config.admin_password = pwd.trim();
     } else {
         config = {
             host: formData.get('imap_host'),

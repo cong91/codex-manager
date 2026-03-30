@@ -24,7 +24,8 @@ let availableServices = {
     moe_mail: { available: false, services: [] },
     temp_mail: { available: false, services: [] },
     duck_mail: { available: false, services: [] },
-    freemail: { available: false, services: [] }
+    freemail: { available: false, services: [] },
+    cloud_mail: { available: false, services: [] }
 };
 
 // WebSocket 相关变量
@@ -376,6 +377,23 @@ function updateEmailServiceOptions() {
 
         select.appendChild(optgroup);
     }
+
+    // Cloud Mail
+    if (availableServices.cloud_mail && availableServices.cloud_mail.available) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = `☁️ Cloud Mail (${availableServices.cloud_mail.count} 个服务)`;
+
+        availableServices.cloud_mail.services.forEach(service => {
+            const option = document.createElement('option');
+            option.value = `cloud_mail:${service.id}`;
+            option.textContent = service.name + (service.default_domain ? ` (@${service.default_domain})` : '');
+            option.dataset.type = 'cloud_mail';
+            option.dataset.serviceId = service.id;
+            optgroup.appendChild(option);
+        });
+
+        select.appendChild(optgroup);
+    }
 }
 
 // 处理邮箱服务切换
@@ -425,6 +443,11 @@ function handleServiceChange(e) {
         const service = availableServices.freemail.services.find(s => s.id == id);
         if (service) {
             addLog('info', `[Hệ thống] Đã chọn dịch vụ Freemail: ${service.name}`);
+        }
+    } else if (type === 'cloud_mail') {
+        const service = availableServices.cloud_mail.services.find(s => s.id == id);
+        if (service) {
+            addLog('info', `[系统] 已选择 Cloud Mail 服务: ${service.name}`);
         }
     }
 }
@@ -1061,7 +1084,7 @@ function resetButtons() {
     elements.cancelBtn.disabled = true;
     currentTask = null;
     currentBatch = null;
-    isBatchMode = false;
+    // 注意：不重置 isBatchMode，因为用户可能想继续使用批量模式
     // 重置完成标志
     taskCompleted = false;
     batchCompleted = false;
@@ -1289,12 +1312,13 @@ function connectBatchWebSocket(batchId) {
                     if (!toastShown) {
                         toastShown = true;
                         if (data.status === 'completed') {
-                            addLog('success', `[Hoàn tất] Tác vụ Outlook hàng loạt đã hoàn tất! Thành công: ${data.success}, Thất bại: ${data.failed}, | Bỏ qua: ${data.skipped || 0}`);
+                            const batchLabel = isOutlookBatchMode ? 'Outlook hàng loạt' : 'hàng loạt';
+                            addLog('success', `[Hoàn tất] Tác vụ ${batchLabel} đã hoàn tất! Thành công: ${data.success}, Thất bại: ${data.failed}, Bỏ qua: ${data.skipped || 0}`);
                             if (data.success > 0) {
-                                toast.success(`Outlook Đăng ký hàng loạt hoàn tất, thành công ${data.success} tài khoản`);
+                                toast.success(`Đăng ký ${batchLabel} hoàn tất, thành công ${data.success} tài khoản`);
                                 loadRecentAccounts();
                             } else {
-                                toast.warning('Outlook Đăng ký hàng loạt đã hoàn tất nhưng không có tài khoản nào đăng ký thành công');
+                                toast.warning(`Đăng ký ${batchLabel} đã hoàn tất nhưng không có tài khoản nào đăng ký thành công`);
                             }
                         } else if (data.status === 'failed') {
                             addLog('error', '[Lỗi] Tác vụ hàng loạt thực thi thất bại');

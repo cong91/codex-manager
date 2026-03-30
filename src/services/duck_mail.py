@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from html import unescape
 from typing import Any, Dict, List, Optional
 
-from .base import BaseEmailService, EmailServiceError, EmailServiceType, RateLimitedEmailServiceError
+from .base import BaseEmailService, EmailServiceError, EmailServiceType, OTPNoOpenAISenderEmailServiceError, RateLimitedEmailServiceError, get_email_code_settings
 from ..config.constants import OTP_CODE_PATTERN
 from ..core.http_client import HTTPClient, RequestConfig
 
@@ -258,10 +258,12 @@ class DuckMailService(BaseEmailService):
             logger.warning(f"DuckMail 邮箱缺少访问 token: {email}")
             return None
 
+        poll_interval = get_email_code_settings()["poll_interval"]
         start_time = time.time()
         seen_message_ids = set()
 
         while time.time() - start_time < timeout:
+            self._raise_if_cancelled("等待 DuckMail 验证码时任务已取消")
             try:
                 response = self._make_request(
                     "GET",
@@ -271,7 +273,23 @@ class DuckMailService(BaseEmailService):
                 )
                 messages = response.get("hydra:member", [])
 
-                for message in messages:
+                ordered_messages = self._sort_items_by_message_time(
+                    messages,
+                    lambda item: item.get("createdAt") if isinstance(item, dict) else None,
+                )
+
+                if ordered_messages:
+                    sender_values = [
+                        msg for msg in ordered_messages
+                        if isinstance(msg, dict) and (msg.get("from") or msg.get("sender"))
+                    ]
+                    if sender_values and not self._batch_has_openai_sender(
+                        sender_values,
+                        lambda item: item.get("from") or item.get("sender"),
+                    ):
+                        raise OTPNoOpenAISenderEmailServiceError()
+
+                for message in ordered_messages:
                     message_id = str(message.get("id") or "").strip()
                     if not message_id or message_id in seen_message_ids:
                         continue
@@ -281,6 +299,7 @@ class DuckMailService(BaseEmailService):
                         continue
 
                     seen_message_ids.add(message_id)
+                    message_marker = f"id:{message_id}"
                     detail = self._make_request(
                         "GET",
                         f"/messages/{message_id}",
@@ -288,17 +307,25 @@ class DuckMailService(BaseEmailService):
                     )
 
                     content = self._message_search_text(message, detail)
-                    if "openai" not in content.lower():
+                    if not self._is_openai_candidate_message(
+                        message.get("from") or message.get("sender"),
+                        content,
+                    ):
                         continue
 
                     match = re.search(pattern, content)
                     if match:
+                        code = match.group(1)
+                        if not self._accept_verification_code(email, code, message_marker):
+                            continue
                         self.update_status(True)
-                        return match.group(1)
+                        return code
             except Exception as e:
+                if isinstance(e, OTPNoOpenAISenderEmailServiceError):
+                    raise
                 logger.debug(f"DuckMail 轮询验证码失败: {e}")
 
-            time.sleep(3)
+            self._sleep_with_cancel(poll_interval)
 
         return None
 

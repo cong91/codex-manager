@@ -29,8 +29,16 @@ const elements = {
     selectAllServices: document.getElementById('select-all-services'),
     // 代理列表
     proxiesTable: document.getElementById('proxies-table'),
+    selectAllProxies: document.getElementById('select-all-proxies'),
     addProxyBtn: document.getElementById('add-proxy-btn'),
+    batchDeleteProxiesBtn: document.getElementById('batch-delete-proxies-btn'),
     testAllProxiesBtn: document.getElementById('test-all-proxies-btn'),
+    deleteDisabledProxiesBtn: document.getElementById('delete-disabled-proxies-btn'),
+    batchImportProxyBtn: document.getElementById('batch-import-proxy-btn'),
+    batchImportProxyModal: document.getElementById('batch-import-proxy-modal'),
+    closeBatchImportProxyModal: document.getElementById('close-batch-import-proxy-modal'),
+    cancelBatchImportProxyBtn: document.getElementById('cancel-batch-import-proxy-btn'),
+    confirmBatchImportProxyBtn: document.getElementById('confirm-batch-import-proxy-btn'),
     addProxyModal: document.getElementById('add-proxy-modal'),
     proxyItemForm: document.getElementById('proxy-item-form'),
     closeProxyModal: document.getElementById('close-proxy-modal'),
@@ -83,6 +91,8 @@ const elements = {
 
 // 选中的服务 ID
 let selectedServiceIds = new Set();
+let selectedProxyIds = new Set();
+let disabledProxyCount = 0;
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
@@ -210,8 +220,54 @@ function initEventListeners() {
         elements.addProxyBtn.addEventListener('click', () => openProxyModal());
     }
 
+    if (elements.batchImportProxyBtn) {
+        elements.batchImportProxyBtn.addEventListener('click', () => {
+            document.getElementById('batch-import-proxy-data').value = '';
+            document.getElementById('batch-import-proxy-result').innerHTML = '';
+            elements.batchImportProxyModal.classList.add('active');
+        });
+    }
+
+    if (elements.closeBatchImportProxyModal) {
+        elements.closeBatchImportProxyModal.addEventListener('click', () => {
+            elements.batchImportProxyModal.classList.remove('active');
+        });
+    }
+
+    if (elements.cancelBatchImportProxyBtn) {
+        elements.cancelBatchImportProxyBtn.addEventListener('click', () => {
+            elements.batchImportProxyModal.classList.remove('active');
+        });
+    }
+
+    if (elements.confirmBatchImportProxyBtn) {
+        elements.confirmBatchImportProxyBtn.addEventListener('click', handleBatchImportProxies);
+    }
+
+    if (elements.batchImportProxyModal) {
+        elements.batchImportProxyModal.addEventListener('click', (e) => {
+            if (e.target === elements.batchImportProxyModal) {
+                elements.batchImportProxyModal.classList.remove('active');
+            }
+        });
+    }
+
     if (elements.testAllProxiesBtn) {
         elements.testAllProxiesBtn.addEventListener('click', handleTestAllProxies);
+    }
+
+    if (elements.selectAllProxies) {
+        elements.selectAllProxies.addEventListener('change', (e) => {
+            toggleSelectAllProxies(e.target.checked);
+        });
+    }
+
+    if (elements.batchDeleteProxiesBtn) {
+        elements.batchDeleteProxiesBtn.addEventListener('click', handleBatchDeleteProxies);
+    }
+
+    if (elements.deleteDisabledProxiesBtn) {
+        elements.deleteDisabledProxiesBtn.addEventListener('click', handleDeleteDisabledProxies);
     }
 
     if (elements.closeProxyModal) {
@@ -361,6 +417,8 @@ async function loadSettings() {
         if (data.email_code) {
             document.getElementById('email-code-timeout').value = data.email_code.timeout || 120;
             document.getElementById('email-code-poll-interval').value = data.email_code.poll_interval || 3;
+            document.getElementById('email-code-resend-max-retries').value = data.email_code.resend_max_retries ?? 2;
+            document.getElementById('email-code-non-openai-sender-resend-max-retries').value = data.email_code.non_openai_sender_resend_max_retries ?? 1;
         }
 
         // 加载 Outlook 设置
@@ -525,9 +583,23 @@ async function handleSaveEmailCode(e) {
         return;
     }
 
+    const resendMaxRetries = parseInt(document.getElementById('email-code-resend-max-retries').value);
+    const nonOpenaiSenderResendMaxRetries = parseInt(document.getElementById('email-code-non-openai-sender-resend-max-retries').value);
+
+    if (resendMaxRetries < 0 || resendMaxRetries > 10) {
+        toast.error('重发次数必须在 0-10 之间');
+        return;
+    }
+    if (nonOpenaiSenderResendMaxRetries < 0 || nonOpenaiSenderResendMaxRetries > 10) {
+        toast.error('非 OpenAI 发件人重发次数必须在 0-10 之间');
+        return;
+    }
+
     const data = {
         timeout: timeout,
-        poll_interval: pollInterval
+        poll_interval: pollInterval,
+        resend_max_retries: resendMaxRetries,
+        non_openai_sender_resend_max_retries: nonOpenaiSenderResendMaxRetries
     };
 
     try {
@@ -791,12 +863,16 @@ function escapeHtml(text) {
 async function loadProxies() {
     try {
         const data = await api.get('/settings/proxies');
+        syncSelectedProxyIds(data.proxies || []);
         renderProxies(data.proxies);
     } catch (error) {
         console.error('Tải danh sách proxy thất bại:', error);
+        selectedProxyIds = new Set();
+        disabledProxyCount = 0;
+        updateProxyBatchActions();
         elements.proxiesTable.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="9">
                     <div class="empty-state">
                         <div class="empty-state-icon">❌</div>
                         <div class="empty-state-title">Tải thất bại</div>
@@ -810,9 +886,12 @@ async function loadProxies() {
 // 渲染代理列表
 function renderProxies(proxies) {
     if (!proxies || proxies.length === 0) {
+        selectedProxyIds = new Set();
+        disabledProxyCount = 0;
+        updateProxyBatchActions();
         elements.proxiesTable.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="9">
                     <div class="empty-state">
                         <div class="empty-state-icon">🌐</div>
                         <div class="empty-state-title">Chưa có proxy</div>
@@ -824,15 +903,27 @@ function renderProxies(proxies) {
         return;
     }
 
+    disabledProxyCount = proxies.filter((proxy) => proxy && proxy.enabled === false).length;
+
     elements.proxiesTable.innerHTML = proxies.map(proxy => `
         <tr data-proxy-id="${proxy.id}">
+            <td style="text-align:center;">
+                <input
+                    type="checkbox"
+                    class="proxy-checkbox"
+                    data-id="${proxy.id}"
+                    ${selectedProxyIds.has(proxy.id) ? 'checked' : ''}
+                    onchange="updateSelectedProxies()"
+                    aria-label="选择代理 ${proxy.id}"
+                >
+            </td>
             <td>${proxy.id}</td>
             <td>${escapeHtml(proxy.name)}</td>
             <td><span class="badge">${proxy.type.toUpperCase()}</span></td>
             <td><code>${escapeHtml(proxy.host)}:${proxy.port}</code></td>
             <td>
                 ${proxy.is_default
-                    ? '<span class="status-badge active">Mặc định</span>'
+                    ? `<button class="btn btn-ghost btn-sm" onclick="handleUnsetProxyDefault(${proxy.id})" title="Bỏ mặc định">Bỏ mặc định</button>`
                     : `<button class="btn btn-ghost btn-sm" onclick="handleSetProxyDefault(${proxy.id})" title="Đặt mặc định">Đặt mặc định</button>`
                 }
             </td>
@@ -846,7 +937,10 @@ function renderProxies(proxies) {
                         <div class="dropdown-menu" style="min-width:80px;">
                             <a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);testProxyItem(${proxy.id})">Kiểm tra</a>
                             <a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);toggleProxyItem(${proxy.id}, ${!proxy.enabled})">${proxy.enabled ? 'Tắt' : 'Bật'}</a>
-                            ${!proxy.is_default ? `<a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);handleSetProxyDefault(${proxy.id})">Đặt mặc định</a>` : ''}
+                            ${proxy.is_default
+                                ? `<a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);handleUnsetProxyDefault(${proxy.id})">Bỏ mặc định</a>`
+                                : `<a href="#" class="dropdown-item" onclick="event.preventDefault();closeSettingsMoreMenu(this);handleSetProxyDefault(${proxy.id})">Đặt mặc định</a>`
+                            }
                         </div>
                     </div>
                     <button class="btn btn-danger btn-sm" onclick="deleteProxyItem(${proxy.id})">Xóa</button>
@@ -854,6 +948,56 @@ function renderProxies(proxies) {
             </td>
         </tr>
     `).join('');
+
+    updateProxyBatchActions();
+}
+
+function syncSelectedProxyIds(proxies) {
+    const validIds = new Set((proxies || []).map(proxy => proxy.id));
+    selectedProxyIds = new Set([...selectedProxyIds].filter(id => validIds.has(id)));
+}
+
+function toggleSelectAllProxies(checked) {
+    document.querySelectorAll('.proxy-checkbox').forEach((checkbox) => {
+        checkbox.checked = checked;
+    });
+    updateSelectedProxies();
+}
+
+function updateSelectedProxies() {
+    selectedProxyIds = new Set(
+        [...document.querySelectorAll('.proxy-checkbox:checked')]
+            .map((checkbox) => parseInt(checkbox.dataset.id, 10))
+            .filter((id) => Number.isInteger(id) && id > 0)
+    );
+    updateProxyBatchActions();
+}
+
+function updateProxyBatchActions() {
+    const proxyCheckboxes = [...document.querySelectorAll('.proxy-checkbox')];
+    const checkedCount = selectedProxyIds.size;
+
+    if (elements.selectAllProxies) {
+        const totalCount = proxyCheckboxes.length;
+        const allChecked = totalCount > 0 && checkedCount === totalCount;
+        elements.selectAllProxies.checked = allChecked;
+        elements.selectAllProxies.indeterminate = checkedCount > 0 && checkedCount < totalCount;
+        elements.selectAllProxies.disabled = totalCount === 0;
+    }
+
+    if (elements.batchDeleteProxiesBtn) {
+        elements.batchDeleteProxiesBtn.disabled = checkedCount === 0;
+        elements.batchDeleteProxiesBtn.textContent = checkedCount > 0
+            ? `🗑️ 批量删除 (${checkedCount})`
+            : '🗑️ 批量删除';
+    }
+
+    if (elements.deleteDisabledProxiesBtn) {
+        elements.deleteDisabledProxiesBtn.disabled = disabledProxyCount === 0;
+        elements.deleteDisabledProxiesBtn.textContent = disabledProxyCount > 0
+            ? `🧹 删除禁用项 (${disabledProxyCount})`
+            : '🧹 删除禁用项';
+    }
 }
 
 function toggleSettingsMoreMenu(btn) {
@@ -876,6 +1020,36 @@ async function handleSetProxyDefault(id) {
         loadProxies();
     } catch (error) {
         toast.error('Thao tác thất bại: ' + error.message);
+    }
+}
+
+// 取消默认代理
+async function handleUnsetProxyDefault(id) {
+    try {
+        await api.post(`/settings/proxies/${id}/unset-default`);
+        toast.success('已取消默认代理');
+        loadProxies();
+    } catch (error) {
+        toast.error('操作失败: ' + error.message);
+    }
+}
+
+// 批量导入代理
+async function handleBatchImportProxies() {
+    const lines = document.getElementById('batch-import-proxy-data').value;
+    const resultEl = document.getElementById('batch-import-proxy-result');
+    if (!lines.trim()) {
+        resultEl.innerHTML = '<span style="color:var(--color-warning)">请输入代理数据</span>';
+        return;
+    }
+    try {
+        const result = await api.post('/settings/proxies/batch-import', { lines });
+        const color = result.failed > 0 ? 'var(--color-warning)' : 'var(--color-success)';
+        resultEl.innerHTML = `<span style="color:${color}">导入成功 ${result.success} 条，失败 ${result.failed} 条。</span>`
+            + (result.errors.length ? '<br><pre style="font-size:0.8rem;margin-top:4px;">' + result.errors.join('\n') + '</pre>' : '');
+        if (result.success > 0) await loadProxies();
+    } catch (error) {
+        resultEl.innerHTML = `<span style="color:var(--color-danger)">导入失败: ${error.message}</span>`;
     }
 }
 
@@ -984,7 +1158,50 @@ async function deleteProxyItem(id) {
     }
 }
 
-// Kiểm tra所有代理
+async function handleBatchDeleteProxies() {
+    const ids = [...selectedProxyIds];
+    if (ids.length === 0) {
+        toast.error('Vui lòng chọn proxy cần xóa');
+        return;
+    }
+
+    const confirmed = await confirm(`Bạn có chắc muốn xóa ${ids.length} proxy đã chọn không?`);
+    if (!confirmed) return;
+
+    try {
+        const result = await api.post('/settings/proxies/batch-delete', { ids });
+        const missingCount = Array.isArray(result.not_found_ids) ? result.not_found_ids.length : 0;
+        const summary = missingCount > 0
+            ? `${result.message}; có ${missingCount} proxy không tồn tại hoặc đã bị xóa trước đó`
+            : result.message;
+        toast.success(summary || `Đã xóa ${ids.length} proxy`);
+        selectedProxyIds = new Set();
+        await loadProxies();
+    } catch (error) {
+        toast.error('Xóa hàng loạt thất bại: ' + error.message);
+    }
+}
+
+async function handleDeleteDisabledProxies() {
+    if (disabledProxyCount === 0) {
+        toast.error('Hiện không có proxy bị tắt để xóa');
+        return;
+    }
+
+    const confirmed = await confirm(`Bạn có chắc muốn xóa toàn bộ ${disabledProxyCount} proxy đang bị tắt không?`);
+    if (!confirmed) return;
+
+    try {
+        const result = await api.post('/settings/proxies/delete-disabled');
+        selectedProxyIds = new Set();
+        toast.success(result.message || `Đã xóa ${result.deleted_count || 0} proxy bị tắt`);
+        await loadProxies();
+    } catch (error) {
+        toast.error('Xóa proxy bị tắt thất bại: ' + error.message);
+    }
+}
+
+// Kiểm tra tất cả proxy
 async function handleTestAllProxies() {
     elements.testAllProxiesBtn.disabled = true;
     elements.testAllProxiesBtn.innerHTML = '<span class="loading-spinner"></span> Đang kiểm tra...';
@@ -1296,6 +1513,28 @@ function closeNewapiServiceModal() {
     elements.newapiServiceEditModal.classList.remove('active');
 }
 
+function validateNewapiApiKeyInput(apiKey, { required = false } = {}) {
+    const normalizedApiKey = String(apiKey || '').trim();
+    if (!normalizedApiKey) {
+        if (required) {
+            return '新增服务时 Root Token / API Key 不能为空';
+        }
+        return '';
+    }
+
+    for (const char of normalizedApiKey) {
+        const code = char.charCodeAt(0);
+        if (code > 127) {
+            return 'Root Token / API Key 只能包含 ASCII 字符，请粘贴实际令牌，不要填写中文说明';
+        }
+        if (code < 32 || code === 127) {
+            return 'Root Token / API Key 包含非法控制字符';
+        }
+    }
+
+    return '';
+}
+
 async function editNewapiService(id) {
     try {
         const service = await api.get(`/newapi-services/${id}`);
@@ -1321,8 +1560,9 @@ async function handleSaveNewapiService(e) {
         toast.error('Tên và URL API không được để trống');
         return;
     }
-    if (!id && !apiKey) {
-        toast.error('Khi thêm dịch vụ mới, Root Token / API Key không được để trống');
+    const apiKeyValidationError = validateNewapiApiKeyInput(apiKey, { required: !id });
+    if (apiKeyValidationError) {
+        toast.error(apiKeyValidationError);
         return;
     }
 

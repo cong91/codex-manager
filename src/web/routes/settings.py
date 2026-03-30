@@ -4,7 +4,7 @@
 
 import logging
 import os
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -108,6 +108,8 @@ async def get_all_settings():
         "email_code": {
             "timeout": settings.email_code_timeout,
             "poll_interval": settings.email_code_poll_interval,
+            "resend_max_retries": settings.email_code_resend_max_retries,
+            "non_openai_sender_resend_max_retries": settings.email_code_non_openai_sender_resend_max_retries,
         },
     }
 
@@ -386,6 +388,8 @@ class EmailCodeSettings(BaseModel):
     """验证码等待设置"""
     timeout: int = 120  # 验证码等待超时（秒）
     poll_interval: int = 3  # 验证码轮询间隔（秒）
+    resend_max_retries: int = 2  # 收件箱未找到验证码时最多重新发送次数
+    non_openai_sender_resend_max_retries: int = 1  # 非 OpenAI 发件人导致的最多重新发送次数
 
 
 @router.get("/tempmail")
@@ -423,6 +427,8 @@ async def get_email_code_settings():
     return {
         "timeout": settings.email_code_timeout,
         "poll_interval": settings.email_code_poll_interval,
+        "resend_max_retries": settings.email_code_resend_max_retries,
+        "non_openai_sender_resend_max_retries": settings.email_code_non_openai_sender_resend_max_retries,
     }
 
 
@@ -435,9 +441,16 @@ async def update_email_code_settings(request: EmailCodeSettings):
     if request.poll_interval < 1 or request.poll_interval > 30:
         raise HTTPException(status_code=400, detail="Khoảng polling phải nằm trong khoảng 1-30 giây")
 
+    if request.resend_max_retries < 0 or request.resend_max_retries > 10:
+        raise HTTPException(status_code=400, detail="重发次数必须在 0-10 之间")
+    if request.non_openai_sender_resend_max_retries < 0 or request.non_openai_sender_resend_max_retries > 10:
+        raise HTTPException(status_code=400, detail="非 OpenAI 发件人重发次数必须在 0-10 之间")
+
     update_settings(
         email_code_timeout=request.timeout,
         email_code_poll_interval=request.poll_interval,
+        email_code_resend_max_retries=request.resend_max_retries,
+        email_code_non_openai_sender_resend_max_retries=request.non_openai_sender_resend_max_retries,
     )
 
     return {"success": True, "message": "Cài đặt thời gian chờ mã xác minh đã được cập nhật"}
@@ -457,6 +470,11 @@ class ProxyCreateRequest(BaseModel):
     priority: int = 0
 
 
+class ProxyBatchDeleteRequest(BaseModel):
+    """批量删除代理请求"""
+    ids: List[int]
+
+
 class ProxyUpdateRequest(BaseModel):
     """更新代理请求"""
     name: Optional[str] = None
@@ -468,6 +486,58 @@ class ProxyUpdateRequest(BaseModel):
     enabled: Optional[bool] = None
     priority: Optional[int] = None
 
+def _test_proxy_connectivity(proxy_url: str) -> dict:
+    """测试代理连通性并返回统一结果。"""
+    import time
+    from curl_cffi import requests as cffi_requests
+
+    test_url = "https://api.ipify.org?format=json"
+    start_time = time.time()
+
+    proxies_dict = {
+        "http": proxy_url,
+        "https": proxy_url
+    }
+
+    response = cffi_requests.get(
+        test_url,
+        proxies=proxies_dict,
+        timeout=3,
+        impersonate="chrome110"
+    )
+
+    elapsed_time = time.time() - start_time
+    if response.status_code == 200:
+        ip_info = response.json()
+        return {
+            "success": True,
+            "ip": ip_info.get("ip", ""),
+            "response_time": round(elapsed_time * 1000),
+            "message": f"代理连接成功，出口 IP: {ip_info.get('ip', 'unknown')}"
+        }
+
+    return {
+        "success": False,
+        "message": f"状态码: {response.status_code}"
+    }
+
+
+def _auto_disable_proxy_on_failure(db, proxy, message: str) -> dict:
+    """代理测试失败时自动禁用，并返回统一提示。"""
+    auto_disabled = False
+    if proxy.enabled:
+        crud.update_proxy(db, proxy.id, enabled=False)
+        auto_disabled = True
+
+    final_message = message
+    if auto_disabled:
+        final_message = f"{message}，已自动禁用"
+
+    return {
+        "success": False,
+        "auto_disabled": auto_disabled,
+        "message": final_message,
+    }
 
 @router.get("/proxies")
 async def get_proxies_list(enabled: Optional[bool] = None):
@@ -496,6 +566,35 @@ async def create_proxy_item(request: ProxyCreateRequest):
             priority=request.priority
         )
         return {"success": True, "proxy": proxy.to_dict()}
+
+
+@router.post("/proxies/batch-delete")
+async def batch_delete_proxies(request: ProxyBatchDeleteRequest):
+    """批量删除代理。"""
+    if not request.ids:
+        raise HTTPException(status_code=400, detail="请至少选择一个代理")
+
+    with get_db() as db:
+        result = crud.delete_proxies_by_ids(db, request.ids)
+        return {
+            "success": True,
+            "requested_count": result["requested_count"],
+            "deleted_count": result["deleted_count"],
+            "not_found_ids": result["not_found_ids"],
+            "message": f"已删除 {result['deleted_count']} 个代理",
+        }
+
+
+@router.post("/proxies/delete-disabled")
+async def delete_disabled_proxy_items():
+    """删除所有已禁用代理。"""
+    with get_db() as db:
+        deleted_count = crud.delete_disabled_proxies(db)
+        return {
+            "success": True,
+            "deleted_count": deleted_count,
+            "message": f"已删除 {deleted_count} 个禁用代理",
+        }
 
 
 @router.get("/proxies/{proxy_id}")
@@ -554,6 +653,94 @@ async def set_proxy_default(proxy_id: int):
         if not proxy:
             raise HTTPException(status_code=404, detail="Không tìm thấy proxy")
         return {"success": True, "proxy": proxy.to_dict()}
+
+
+@router.post("/proxies/{proxy_id}/unset-default")
+async def unset_proxy_default(proxy_id: int):
+    """取消指定代理的默认标记"""
+    with get_db() as db:
+        proxy = crud.unset_proxy_default(db, proxy_id)
+        if not proxy:
+            raise HTTPException(status_code=404, detail="代理不存在")
+        return {"success": True, "proxy": proxy.to_dict()}
+
+
+class ProxyBatchImportRequest(BaseModel):
+    """批量导入代理请求"""
+    lines: str
+
+
+def _parse_proxy_line(line: str):
+    """
+    解析单行代理字符串，支持格式：
+    - host:port
+    - type://host:port
+    - type://user:pass@host:port
+    - 名称|type://user:pass@host:port
+    """
+    from urllib.parse import urlparse
+
+    name = None
+    # 解析可选名称前缀（竖线分隔）
+    if '|' in line:
+        name, line = line.split('|', 1)
+        name = name.strip()
+        line = line.strip()
+
+    # 若没有协议头，默认补 http://
+    if '://' not in line:
+        line = 'http://' + line
+
+    parsed = urlparse(line)
+    proxy_type = (parsed.scheme or 'http').lower()
+    if proxy_type not in ('http', 'https', 'socks5', 'socks4'):
+        proxy_type = 'http'
+
+    host = parsed.hostname
+    port = parsed.port
+    username = parsed.username or None
+    password = parsed.password or None
+
+    if not host or not port:
+        raise ValueError(f"无法解析 host/port")
+
+    if not name:
+        name = f"{proxy_type}://{host}:{port}"
+
+    return name, proxy_type, host, port, username, password
+
+
+@router.post("/proxies/batch-import")
+async def batch_import_proxies(request: ProxyBatchImportRequest):
+    """
+    批量导入代理，每行格式支持：
+    - host:port
+    - type://host:port
+    - type://user:pass@host:port
+    - 名称|type://user:pass@host:port
+    """
+    results = {"success": 0, "failed": 0, "errors": []}
+    with get_db() as db:
+        for raw_line in request.lines.splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            try:
+                name, proxy_type, host, port, username, password = _parse_proxy_line(line)
+                crud.create_proxy(
+                    db,
+                    name=name,
+                    type=proxy_type,
+                    host=host,
+                    port=port,
+                    username=username,
+                    password=password,
+                )
+                results["success"] += 1
+            except Exception as e:
+                results["failed"] += 1
+                results["errors"].append(f"{raw_line}: {e}")
+    return results
 
 
 @router.post("/proxies/{proxy_id}/test")
@@ -696,6 +883,10 @@ async def disable_proxy(proxy_id: int):
 class OutlookSettings(BaseModel):
     """Outlook 设置"""
     default_client_id: Optional[str] = None
+    provider_priority: Optional[List[str]] = None
+    health_failure_threshold: Optional[int] = None
+    health_disable_duration: Optional[int] = None
+    require_recipient_match: Optional[bool] = None
 
 
 @router.get("/outlook")
@@ -708,6 +899,7 @@ async def get_outlook_settings():
         "provider_priority": settings.outlook_provider_priority,
         "health_failure_threshold": settings.outlook_health_failure_threshold,
         "health_disable_duration": settings.outlook_health_disable_duration,
+        "require_recipient_match": settings.outlook_require_recipient_match,
     }
 
 
@@ -718,6 +910,14 @@ async def update_outlook_settings(request: OutlookSettings):
 
     if request.default_client_id is not None:
         update_dict["outlook_default_client_id"] = request.default_client_id
+    if request.provider_priority is not None:
+        update_dict["outlook_provider_priority"] = request.provider_priority
+    if request.health_failure_threshold is not None:
+        update_dict["outlook_health_failure_threshold"] = request.health_failure_threshold
+    if request.health_disable_duration is not None:
+        update_dict["outlook_health_disable_duration"] = request.health_disable_duration
+    if request.require_recipient_match is not None:
+        update_dict["outlook_require_recipient_match"] = request.require_recipient_match
 
     if update_dict:
         update_settings(**update_dict)

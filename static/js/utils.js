@@ -372,7 +372,8 @@ const statusMap = {
         temp_mail: 'Temp-Mail (tự host)',
         duck_mail: 'DuckMail',
         freemail: 'Freemail',
-        imap_mail: 'Email IMAP'
+        imap_mail: 'Email IMAP',
+        cloud_mail: 'Cloud Mail'
     }
 };
 

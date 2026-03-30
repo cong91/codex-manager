@@ -10,7 +10,7 @@ import logging
 from typing import Optional, Dict, Any, List
 from urllib.parse import urljoin
 
-from .base import BaseEmailService, EmailServiceError, EmailServiceType, RateLimitedEmailServiceError
+from .base import BaseEmailService, EmailServiceError, EmailServiceType, OTPNoOpenAISenderEmailServiceError, RateLimitedEmailServiceError, get_email_code_settings
 from ..core.http_client import HTTPClient, RequestConfig
 from ..config.constants import OTP_CODE_PATTERN
 
@@ -303,25 +303,51 @@ class MeoMailEmailService(BaseEmailService):
 
         logger.info(f"正在从自定义域名邮箱 {email} 获取验证码...")
 
+        poll_interval = get_email_code_settings()["poll_interval"]
         start_time = time.time()
         seen_message_ids = set()
 
         while time.time() - start_time < timeout:
+            self._raise_if_cancelled("等待自定义域名邮箱验证码时任务已取消")
             try:
                 # 获取邮件列表
                 response = self._make_request("GET", f"/api/emails/{target_email_id}")
 
                 messages = response.get("messages", [])
                 if not isinstance(messages, list):
-                    time.sleep(3)
+                    self._sleep_with_cancel(poll_interval)
                     continue
 
-                for message in messages:
+                ordered_messages = self._sort_items_by_message_time(
+                    messages,
+                    lambda item: (
+                        item.get("created_at")
+                        or item.get("createdAt")
+                        or item.get("received_at")
+                        or item.get("receivedAt")
+                    ) if isinstance(item, dict) else None,
+                )
+
+                if ordered_messages:
+                    if not self._batch_has_openai_sender(
+                        ordered_messages,
+                        lambda item: item.get("from_address") if isinstance(item, dict) else None,
+                    ):
+                        raise OTPNoOpenAISenderEmailServiceError()
+
+                for message in ordered_messages:
                     message_id = message.get("id")
                     if not message_id or message_id in seen_message_ids:
                         continue
 
                     seen_message_ids.add(message_id)
+                    message_marker = f"id:{message_id}"
+
+                    if self._is_message_before_otp(
+                        message.get("created_at") or message.get("createdAt") or message.get("received_at") or message.get("receivedAt"),
+                        otp_sent_at,
+                    ):
+                        continue
 
                     # 检查是否是目标邮件
                     sender = str(message.get("from_address", "")).lower()
@@ -335,7 +361,7 @@ class MeoMailEmailService(BaseEmailService):
                     content = f"{sender} {subject} {message_content}"
 
                     # 检查是否是 OpenAI 邮件
-                    if "openai" not in sender and "openai" not in content.lower():
+                    if not self._is_openai_candidate_message(sender, subject, message_content):
                         continue
 
                     # 提取验证码 过滤掉邮箱
@@ -343,15 +369,19 @@ class MeoMailEmailService(BaseEmailService):
                     match = re.search(pattern, re.sub(email_pattern, "", content))
                     if match:
                         code = match.group(1)
+                        if not self._accept_verification_code(email, code, message_marker):
+                            continue
                         logger.info(f"从自定义域名邮箱 {email} 找到验证码: {code}")
                         self.update_status(True)
                         return code
 
             except Exception as e:
+                if isinstance(e, OTPNoOpenAISenderEmailServiceError):
+                    raise
                 logger.debug(f"检查邮件时出错: {e}")
 
             # 等待一段时间再检查
-            time.sleep(3)
+            self._sleep_with_cancel(poll_interval)
 
         logger.warning(f"等待验证码超时: {email}")
         return None
